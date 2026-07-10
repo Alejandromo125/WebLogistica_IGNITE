@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Manifest — Material Deployment 26-27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C2333;
+    --paper:#F3F1E9;
+    --paper-2:#EAE6D9;
+    --amber:#E2A63B;
+    --teal:#3F7068;
+    --rust:#C0532D;
+    --slate:#6B7280;
+    --line:#CFC9B8;
+    --card:#FBFAF6;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--amber); color:var(--ink); }
+
+  a, button, input, select { font-family:inherit; }
+  :focus-visible{ outline:3px solid var(--rust); outline-offset:2px; }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .display{ font-family:'Space Grotesk', sans-serif; }
+
+  /* ---------- Header ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:50;
+    background:var(--ink);
+    color:var(--paper);
+    padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+    border-bottom:3px solid var(--amber);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand .mark{
+    width:30px; height:30px;
+    border:2px solid var(--amber);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; font-weight:600;
+    color:var(--amber);
+    transform:rotate(-4deg);
+    flex-shrink:0;
+  }
+  .brand-text{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:18px;
+    letter-spacing:0.02em;
+  }
+  .brand-text span{ color:var(--amber); }
+
+  .searchwrap{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(243,241,233,0.08);
+    border:1px solid rgba(243,241,233,0.35);
+    padding:8px 12px;
+    min-width:230px;
+    flex:1; max-width:340px;
+  }
+  .searchwrap input{
+    background:none; border:none; color:var(--paper);
+    width:100%; font-size:14px; font-family:'IBM Plex Mono', monospace;
+  }
+  .searchwrap input::placeholder{ color:rgba(243,241,233,0.5); }
+  .searchwrap input:focus{ outline:none; }
+  .searchwrap svg{ flex-shrink:0; opacity:0.7; }
+
+  /* ---------- Live source bar ---------- */
+  .livebar{
+    background:var(--paper-2);
+    border-bottom:1px solid var(--line);
+    padding:10px 24px;
+  }
+  .livebar-inner{
+    max-width:1180px; margin:0 auto;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .livebar-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--slate); flex-shrink:0;
+  }
+  .livebar input{
+    flex:1; min-width:220px;
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:7px 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--ink);
+  }
+  .live-status{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    padding:4px 9px;
+    border:1px solid var(--line);
+    white-space:nowrap;
+  }
+  .live-status.idle{ color:var(--slate); }
+  .live-status.loading{ color:var(--ink); border-color:var(--ink); }
+  .live-status.live{ color:var(--teal); border-color:var(--teal); }
+  .live-status.error{ color:var(--rust); border-color:var(--rust); }
+
+  /* ---------- Hero / manifest stamp strip ---------- */
+  .hero{
+    padding:56px 24px 36px;
+    max-width:1180px; margin:0 auto;
+  }
+  .hero-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--rust);
+    margin-bottom:10px;
+  }
+  .hero h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(28px, 4.4vw, 48px);
+    line-height:1.08;
+    margin:0 0 28px;
+    max-width:820px;
+  }
+  .stamps{
+    display:flex; gap:18px; flex-wrap:wrap;
+  }
+  .stamp{
+    border:2px solid var(--ink);
+    padding:14px 22px;
+    background:var(--card);
+    position:relative;
+    min-width:150px;
+  }
+  .stamp:nth-child(2){ transform:rotate(-1.2deg); border-color:var(--teal); }
+  .stamp:nth-child(3){ transform:rotate(1deg); border-color:var(--rust); }
+  .stamp:nth-child(1){ transform:rotate(0.6deg); }
+  .stamp .num{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:36px;
+    line-height:1;
+  }
+  .stamp .lbl{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--slate);
+    margin-top:6px;
+  }
+
+  /* ---------- Section shell ---------- */
+  section{
+    max-width:1180px; margin:0 auto;
+    padding:36px 24px;
+  }
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:16px; margin-bottom:22px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:12px;
+  }
+  .section-head h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:22px; margin:0;
+  }
+  .section-head .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--slate);
+  }
+
+  /* ---------- Material bar chart ---------- */
+  .chart-row{
+    display:grid;
+    grid-template-columns:150px 1fr 46px;
+    align-items:center;
+    gap:12px;
+    padding:7px 0;
+  }
+  .chart-row .mname{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .bar-track{
+    height:16px;
+    background:var(--paper-2);
+    position:relative;
+    cursor:pointer;
+  }
+  .bar-fill{
+    height:100%;
+    background:var(--teal);
+    transition:width .5s ease, background .2s ease;
+  }
+  .bar-track.active .bar-fill{ background:var(--rust); }
+  .chart-row .count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px; text-align:right; color:var(--slate);
+  }
+  .chart-hint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; color:var(--slate);
+    margin-top:14px;
+  }
+
+  /* ---------- Tier split ---------- */
+  .tiersplit{ display:flex; gap:24px; flex-wrap:wrap; align-items:stretch; }
+  .tier-block{
+    flex:1; min-width:220px;
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:18px 20px;
+  }
+  .tier-block .tt{ display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .dot{ width:10px; height:10px; border-radius:50%; display:inline-block;}
+  .dot.t1{ background:var(--rust);}
+  .dot.t2{ background:var(--teal);}
+  .tier-block .big{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:30px;}
+  .tier-block .desc{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--slate); margin-top:4px;}
+
+  /* ---------- Filters ---------- */
+  .filterbar{
+    display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;
+  }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    padding:7px 14px;
+    border:1px solid var(--ink);
+    background:transparent;
+    cursor:pointer;
+    color:var(--ink);
+    transition:background .15s, color .15s;
+  }
+  .chip:hover{ background:var(--paper-2); }
+  .chip.active{ background:var(--ink); color:var(--paper); }
+  .chip .n{ opacity:0.6; margin-left:4px; }
+
+  /* ---------- School grid (tags) ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+    gap:18px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--ink);
+    position:relative;
+    cursor:pointer;
+    padding:18px 18px 16px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:4px 4px 0 var(--ink); }
+  .card::before{
+    content:"";
+    position:absolute; top:0; left:16px; right:16px; height:0;
+    border-top:2px dashed var(--line);
+  }
+  .card .punch{
+    position:absolute; top:-6px; left:50%; transform:translateX(-50%);
+    width:12px; height:12px; border-radius:50%;
+    background:var(--paper); border:1px solid var(--line);
+  }
+  .card .cname{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600; font-size:17px;
+    margin:6px 0 8px;
+    padding-right:60px;
+  }
+  .tierbadge{
+    position:absolute; top:16px; right:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; letter-spacing:0.06em;
+    padding:3px 8px;
+    border:1.5px solid currentColor;
+    transform:rotate(3deg);
+  }
+  .tierbadge.t1{ color:var(--rust); }
+  .tierbadge.t2{ color:var(--teal); }
+  .card .metaline{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; color:var(--slate);
+    margin-bottom:10px;
+  }
+  .chiprow{ display:flex; gap:6px; flex-wrap:wrap; }
+  .matchip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    background:var(--paper-2);
+    padding:3px 7px;
+    border:1px solid var(--line);
+  }
+  .matchip.more{ color:var(--slate); }
+
+  .empty-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; color:var(--slate);
+    padding:30px 0; text-align:center;
+  }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(28,35,51,0.55);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:40px 20px; z-index:100; overflow-y:auto;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background:var(--card);
+    border:2px solid var(--ink);
+    max-width:640px; width:100%;
+    padding:30px 30px 26px;
+    position:relative;
+    margin-top:10px;
+  }
+  .modal-close{
+    position:absolute; top:14px; right:14px;
+    background:none; border:1px solid var(--ink);
+    width:30px; height:30px;
+    font-size:16px; line-height:1; cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .modal-close:hover{ background:var(--ink); color:var(--paper); }
+  .modal h3{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:26px; margin:0 0 4px; padding-right:40px;
+  }
+  .modal .modal-tier{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; margin-bottom:20px;
+  }
+  .modal-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px;
+    margin-bottom:22px;
+  }
+  .modal-stat{
+    border:1px solid var(--line); padding:10px 14px;
+  }
+  .modal-stat .l{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; text-transform:uppercase; color:var(--slate); letter-spacing:0.06em;}
+  .modal-stat .v{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:18px; margin-top:3px;}
+  .manifest-title{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; text-transform:uppercase; letter-spacing:0.1em;
+    color:var(--slate); margin:22px 0 10px;
+    border-bottom:1px solid var(--line); padding-bottom:6px;
+  }
+  .manifest-line{
+    display:flex; justify-content:space-between; align-items:baseline;
+    gap:10px; padding:8px 0; border-bottom:1px dotted var(--line);
+    font-size:14px;
+  }
+  .manifest-line .mn{ font-weight:600; }
+  .manifest-line .ids{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--slate); text-align:right;
+  }
+  .proposal-box{
+    margin-top:18px; padding:12px 14px;
+    background:var(--paper-2); border-left:3px solid var(--amber);
+    font-size:13.5px;
+  }
+  .proposal-box .l{
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:0.08em; color:var(--slate);
+    margin-bottom:4px;
+  }
+
+  footer{
+    max-width:1180px; margin:0 auto; padding:30px 24px 60px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; color:var(--slate);
+    border-top:1px solid var(--line);
+  }
+
+  @media (max-width:640px){
+    .modal-grid{ grid-template-columns:1fr; }
+    .chart-row{ grid-template-columns:100px 1fr 36px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">M26</div>
+    <div class="brand-text">STOCK<span>·</span>MANIFEST</div>
+  </div>
+  <div class="searchwrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" type="text" placeholder="Search school name…" aria-label="Search schools">
+  </div>
+</header>
+
+<div class="livebar">
+  <div class="livebar-inner">
+    <span class="livebar-label">Data source</span>
+    <button id="connectBtn" class="chip" style="white-space:nowrap;">⟳ Fetch latest data</button>
+    <span id="liveStatus" class="live-status idle">No data loaded yet.</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Material deployment · Course 26–27 prep</div>
+  <h1>Where every kit, robot and box currently lives — school by school.</h1>
+  <div class="stamps">
+    <div class="stamp"><div class="num" id="statSchools">0</div><div class="lbl">Schools tracked</div></div>
+    <div class="stamp"><div class="num" id="statUnits">0</div><div class="lbl">Units deployed</div></div>
+    <div class="stamp"><div class="num" id="statMaterials">0</div><div class="lbl">Material lines</div></div>
+  </div>
+</div>
+
+<section>
+  <div class="section-head">
+    <h2>Material distribution</h2>
+    <div class="tag">units in the field, by material line</div>
+  </div>
+  <div id="chartArea"></div>
+  <div class="chart-hint">Click a bar to filter the manifest below to schools using that material.</div>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2>Tier split</h2>
+    <div class="tag">school priority tier</div>
+  </div>
+  <div class="tiersplit" id="tierSplit"></div>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2>School manifest</h2>
+    <div class="tag" id="resultCount">50 schools</div>
+  </div>
+  <div class="filterbar" id="tierFilterBar"></div>
+  <div class="grid" id="schoolGrid"></div>
+  <div class="empty-note" id="emptyNote" style="display:none;">No schools match this filter. Try clearing the search or material filter.</div>
+</section>
+
+<footer>
+  Snapshot from the Gestión_Material_Logistica workbook · Preparación curso 26-27 tab · static export, not live-linked to the spreadsheet.
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+let SCHOOLS = [];
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRVEw8NzheX3YOwf1EpX2LWz18mo2dxQFeWuhlyqKnVv4Nm_VLyqfjDWB_0fZrsCg/pub?gid=1577655545&single=true&output=csv";
+let liveMode = false;
+let refreshTimer = null;
+
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (inQuotes){
+      if (c === '"'){
+        if (text[i+1] === '"'){ field += '"'; i++; }
+        else { inQuotes = false; }
+      } else { field += c; }
+    } else {
+      if (c === '"'){ inQuotes = true; }
+      else if (c === ','){ row.push(field); field = ''; }
+      else if (c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r'){ /* skip */ }
+      else { field += c; }
+    }
+  }
+  if (field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+function parseMaterialsField(raw){
+  const materials = [];
+  const re = /([^,()]+?)\(([^()]*)\)/g;
+  let m;
+  while ((m = re.exec(raw)) !== null){
+    const name = m[1].trim();
+    const ids = m[2].split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    if (name) materials.push({ name: name, ids: ids, count: ids.length });
+  }
+  return materials;
+}
+
+function schoolsFromCSV(text){
+  const rows = parseCSV(text);
+  let headerRowIdx = -1, colIdx = -1;
+  for (let r = 0; r < rows.length; r++){
+    for (let c = 0; c < rows[r].length; c++){
+      if ((rows[r][c] || '').trim().toLowerCase() === 'school list'){
+        headerRowIdx = r; colIdx = c; break;
+      }
+    }
+    if (headerRowIdx !== -1) break;
+  }
+  if (headerRowIdx === -1) throw new Error('Could not find a "School List" header in the sheet.');
+
+  const schools = [];
+  for (let r = headerRowIdx + 1; r < rows.length; r++){
+    const row = rows[r];
+    const name = (row[colIdx] || '').trim();
+    if (!name) continue;
+    const materialRaw = (row[colIdx+1] || '').trim();
+    const studentsRaw = (row[colIdx+2] || '').trim();
+    const tier = (row[colIdx+3] || '').trim();
+    const proposal = (row[colIdx+4] || '').trim();
+    const materials = parseMaterialsField(materialRaw);
+    schools.push({
+      name: name,
+      tier: tier || null,
+      students: studentsRaw === '' ? null : studentsRaw,
+      materials: materials,
+      totalUnits: materials.reduce(function(a,m){ return a+m.count; },0),
+      proposal: proposal
+    });
+  }
+  return schools;
+}
+
+function setStatus(msg, kind){
+  const el = document.getElementById('liveStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'live-status ' + (kind || '');
+}
+
+function connectSheet(url, opts){
+  opts = opts || {};
+  if (!url){ setStatus('No sheet URL configured.', 'error'); return; }
+  if (!opts.silent) setStatus('Connecting…', 'loading');
+  const bustUrl = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+  fetch(bustUrl, { cache: 'no-store' }).then(function(res){
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.text();
+  }).then(function(text){
+    const parsed = schoolsFromCSV(text);
+    if (!parsed.length) throw new Error('Sheet reached, but no school rows were found.');
+    SCHOOLS = parsed;
+    liveMode = true;
+    const now = new Date();
+    setStatus('Live · updated ' + now.toLocaleTimeString() + ' · ' + parsed.length + ' schools found', 'live');
+    renderAll();
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(function(){ connectSheet(url, { silent:true }); }, 5*60*1000);
+  }).catch(function(err){
+    console.error(err);
+    setStatus('Could not reach the sheet (' + err.message + '). Showing last snapshot.', 'error');
+    if (!liveMode){ SCHOOLS = []; renderAll(); }
+  });
+}
+
+function renderAll(){
+  renderStats();
+  renderChart();
+  renderTierSplit();
+  renderTierFilterBar();
+  renderGrid();
+}
+
+const state = { tier: 'ALL', material: null, query: '' };
+
+function fmt(n){ return (n===null||n===undefined||n==='') ? '—' : n; }
+
+function renderStats(){
+  document.getElementById('statSchools').textContent = SCHOOLS.length;
+  document.getElementById('statUnits').textContent = SCHOOLS.reduce((a,s)=>a+s.totalUnits,0);
+  const matSet = new Set();
+  SCHOOLS.forEach(s=>s.materials.forEach(m=>matSet.add(m.name)));
+  document.getElementById('statMaterials').textContent = matSet.size;
+}
+
+function materialTotals(){
+  const totals = {};
+  SCHOOLS.forEach(s=>s.materials.forEach(m=>{
+    totals[m.name] = (totals[m.name]||0) + m.count;
+  }));
+  return Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+}
+
+function renderChart(){
+  const totals = materialTotals();
+  const max = totals.length ? totals[0][1] : 1;
+  const area = document.getElementById('chartArea');
+  area.innerHTML = '';
+  totals.forEach(([name, count])=>{
+    const row = document.createElement('div');
+    row.className = 'chart-row';
+    const active = state.material === name;
+    row.innerHTML = `
+      <div class="mname" title="${name}">${name}</div>
+      <div class="bar-track ${active?'active':''}" data-mat="${name}">
+        <div class="bar-fill" style="width:${(count/max*100).toFixed(1)}%"></div>
+      </div>
+      <div class="count">${count}</div>
+    `;
+    row.querySelector('.bar-track').addEventListener('click', ()=>{
+      state.material = (state.material === name) ? null : name;
+      renderChart();
+      renderGrid();
+    });
+    area.appendChild(row);
+  });
+}
+
+function renderTierSplit(){
+  const wrap = document.getElementById('tierSplit');
+  if(SCHOOLS.length === 0){
+    wrap.innerHTML = `<div class="tier-block"><div class="desc">No data loaded yet — click "Fetch latest data" above.</div></div>`;
+    return;
+  }
+  const t1 = SCHOOLS.filter(s=>s.tier==='Tier1').length;
+  const t2 = SCHOOLS.filter(s=>s.tier==='Tier2').length;
+  const other = SCHOOLS.length - t1 - t2;
+  wrap.innerHTML = `
+    <div class="tier-block">
+      <div class="tt"><span class="dot t1"></span><strong>Tier 1</strong></div>
+      <div class="big">${t1}</div>
+      <div class="desc">schools · ${(t1/SCHOOLS.length*100).toFixed(0)}% of total</div>
+    </div>
+    <div class="tier-block">
+      <div class="tt"><span class="dot t2"></span><strong>Tier 2</strong></div>
+      <div class="big">${t2}</div>
+      <div class="desc">schools · ${(t2/SCHOOLS.length*100).toFixed(0)}% of total</div>
+    </div>
+    ${other>0 ? `<div class="tier-block"><div class="tt"><strong>Unclassified</strong></div><div class="big">${other}</div><div class="desc">tier not recorded</div></div>` : ''}
+  `;
+}
+
+function renderTierFilterBar(){
+  const t1 = SCHOOLS.filter(s=>s.tier==='Tier1').length;
+  const t2 = SCHOOLS.filter(s=>s.tier==='Tier2').length;
+  const bar = document.getElementById('tierFilterBar');
+  const chips = [
+    {key:'ALL', label:'All schools', n: SCHOOLS.length},
+    {key:'Tier1', label:'Tier 1', n:t1},
+    {key:'Tier2', label:'Tier 2', n:t2},
+  ];
+  bar.innerHTML = '';
+  chips.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (state.tier===c.key ? ' active':'');
+    btn.innerHTML = `${c.label} <span class="n">${c.n}</span>`;
+    btn.addEventListener('click', ()=>{ state.tier = c.key; renderTierFilterBar(); renderGrid(); });
+    bar.appendChild(btn);
+  });
+  if(state.material){
+    const clear = document.createElement('button');
+    clear.className = 'chip active';
+    clear.innerHTML = `Material: ${state.material} ✕`;
+    clear.addEventListener('click', ()=>{ state.material=null; renderChart(); renderTierFilterBar(); renderGrid(); });
+    bar.appendChild(clear);
+  }
+}
+
+function schoolMatchesFilters(s){
+  if(state.tier !== 'ALL' && s.tier !== state.tier) return false;
+  if(state.material && !s.materials.some(m=>m.name===state.material)) return false;
+  if(state.query){
+    const q = state.query.toLowerCase();
+    if(!s.name.toLowerCase().includes(q)) return false;
+  }
+  return true;
+}
+
+function renderGrid(){
+  const grid = document.getElementById('schoolGrid');
+  const list = SCHOOLS.filter(schoolMatchesFilters);
+  document.getElementById('resultCount').textContent = `${list.length} school${list.length===1?'':'s'}`;
+  grid.innerHTML = '';
+  const emptyNote = document.getElementById('emptyNote');
+  if (SCHOOLS.length === 0){
+    emptyNote.style.display = 'block';
+    emptyNote.textContent = 'No schools loaded yet. Click "Fetch latest data" above to load from Google Sheets.';
+  } else {
+    emptyNote.style.display = list.length ? 'none' : 'block';
+    emptyNote.textContent = 'No schools match this filter. Try clearing the search or material filter.';
+  }
+
+  list.forEach(s=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    const tierClass = s.tier === 'Tier1' ? 't1' : 't2';
+    const chipsHtml = s.materials.slice(0,4).map(m=>`<span class="matchip">${m.name} ×${m.count}</span>`).join('');
+    const moreHtml = s.materials.length > 4 ? `<span class="matchip more">+${s.materials.length-4} more</span>` : '';
+    card.innerHTML = `
+      <div class="punch"></div>
+      <div class="tierbadge ${tierClass}">${s.tier || 'N/A'}</div>
+      <div class="cname">${s.name}</div>
+      <div class="metaline">${s.totalUnits} units · ${s.materials.length} material line${s.materials.length===1?'':'s'}</div>
+      <div class="chiprow">${chipsHtml || '<span class="matchip">no material recorded</span>'}${moreHtml}</div>
+    `;
+    card.addEventListener('click', ()=>openModal(s));
+    grid.appendChild(card);
+  });
+}
+
+function openModal(s){
+  const modal = document.getElementById('modalContent');
+  const tierClass = s.tier === 'Tier1' ? 't1' : 't2';
+  const manifestLines = s.materials.map(m=>`
+    <div class="manifest-line">
+      <div class="mn">${m.name}</div>
+      <div class="ids">${m.ids.join(', ')}</div>
+    </div>
+  `).join('') || '<div class="manifest-line"><div class="mn">No material currently recorded</div></div>';
+
+  modal.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+    <h3>${s.name}</h3>
+    <div class="modal-tier" style="color:var(--${tierClass==='t1'?'rust':'teal'})">${s.tier || 'Tier not recorded'}</div>
+    <div class="modal-grid">
+      <div class="modal-stat"><div class="l">Students</div><div class="v">${fmt(s.students)}</div></div>
+      <div class="modal-stat"><div class="l">Units deployed</div><div class="v">${s.totalUnits}</div></div>
+    </div>
+    <div class="manifest-title">Material manifest</div>
+    ${manifestLines}
+    <div class="proposal-box">
+      <div class="l">Proposal for 26–27</div>
+      <div>${s.proposal ? s.proposal : 'No proposal recorded yet.'}</div>
+    </div>
+  `;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'overlay') closeModal();
+});
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  state.query = e.target.value;
+  renderGrid();
+});
+
+document.getElementById('connectBtn').addEventListener('click', ()=>{
+  connectSheet(SHEET_CSV_URL);
+});
+
+renderAll();
+setStatus('No data loaded yet. Click "Fetch latest data" above to load from Google Sheets.', 'idle');
+</script>
+</body>
+</html>
