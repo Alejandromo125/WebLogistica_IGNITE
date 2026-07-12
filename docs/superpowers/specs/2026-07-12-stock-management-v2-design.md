@@ -78,8 +78,9 @@ currently at location A, insert a `movements` row per item, update each item's
 - **Schools (`locations`)**: admin-only create/edit (name, tier, students, notes). Viewers get a
   read-only list/grid, matching today's card layout.
 - **Items**: admin adds new items (unit ID, material type, starting location — typically the
-  warehouse) and edits/retires existing ones. Viewers see items read-only as part of a school's
-  manifest.
+  warehouse) and edits/retires existing ones. Material types are managed inline as part of this
+  flow — picking an existing `materials` row or creating a new one — rather than via a separate
+  admin screen. Viewers see items read-only as part of a school's manifest.
 - **Direct transfer (admin only)**: pick one or more item IDs (optionally filtered by material or
   current location), pick a destination location, confirm. Writes one `movements` row per item and
   updates each item's `current_location_id`, as a single transaction.
@@ -88,8 +89,10 @@ currently at location A, insert a `movements` row per item, update each item's
      new `requests` row with `status = pending`.
   2. Admin sees a Requests queue (pending first): school, material, quantity, requester, note.
   3. **Approve**: admin selects which specific item IDs fulfill the request (the UI can suggest
-     available ones from the warehouse or elsewhere); the same transfer logic runs, with
-     `movements.request_id` set to this request and `requests.status = approved`.
+     available ones from the warehouse or elsewhere). The selected count does not have to match
+     the requested `quantity` exactly — the approved movement simply reflects whatever items were
+     actually selected, so an admin can knowingly partially fulfill a request. The same transfer
+     logic runs, with `movements.request_id` set to this request and `requests.status = approved`.
   4. **Deny**: `status = denied`, no stock change.
   5. Either resolution stamps `resolved_by` and `resolved_at`.
 - **History view**: per-item timeline (all its movements, oldest → newest) and per-school timeline
