@@ -411,6 +411,21 @@
   </div>
 </header>
 
+<div class="livebar" id="authBar">
+  <div class="livebar-inner">
+    <span class="livebar-label">Account</span>
+    <form id="loginForm" style="display:flex; gap:8px; align-items:center; flex:1; min-width:220px;">
+      <input id="loginEmail" type="email" placeholder="Email" required
+        style="border:1px solid var(--line); background:var(--card); padding:7px 10px; font-family:'IBM Plex Mono', monospace; font-size:12.5px;">
+      <input id="loginPassword" type="password" placeholder="Password" required
+        style="border:1px solid var(--line); background:var(--card); padding:7px 10px; font-family:'IBM Plex Mono', monospace; font-size:12.5px;">
+      <button type="submit" class="chip">Log in</button>
+    </form>
+    <button id="logoutBtn" class="chip" style="display:none;">Log out</button>
+    <span id="authStatus" class="live-status idle">Not logged in.</span>
+  </div>
+</div>
+
 <div class="livebar">
   <div class="livebar-inner">
     <span class="livebar-label">Data source</span>
@@ -762,5 +777,7 @@ document.getElementById('connectBtn').addEventListener('click', ()=>{
 renderAll();
 setStatus('No data loaded yet. Click "Fetch latest data" above to load from Google Sheets.', 'idle');
 </script>
+
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
