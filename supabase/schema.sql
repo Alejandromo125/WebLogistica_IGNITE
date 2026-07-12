@@ -20,6 +20,7 @@ returns boolean
 language sql
 security definer
 stable
+set search_path = ''
 as $$
   select exists (
     select 1 from public.profiles
@@ -33,7 +34,7 @@ create policy "profiles: admin can read all profiles"
   using (public.is_admin());
 
 -- New auth.users rows get a viewer profile automatically.
--- The first admin is bootstrapped manually in Step 4.
+-- The first admin is bootstrapped manually via SQL (see README).
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql

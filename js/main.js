@@ -43,8 +43,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await auth.signOut();
-  await refreshAuthUI();
+  try {
+    await auth.signOut();
+    await refreshAuthUI();
+  } catch (err) {
+    setAuthStatus('Logout failed: ' + err.message, 'error');
+  }
 });
 
 refreshAuthUI();
