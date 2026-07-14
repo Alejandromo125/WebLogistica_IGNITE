@@ -1,4 +1,6 @@
 // js/schools.js
+import { renderItemsSection } from './items.js';
+
 export function createSchoolsView({ api }) {
   let locations = [];
   let materials = [];
@@ -201,12 +203,6 @@ export function createSchoolsView({ api }) {
     const modal = document.getElementById('modalContent');
     const isWarehouse = s.type === 'warehouse';
     const tierClass = s.tier === 'Tier1' ? 't1' : 't2';
-    const manifestLines = s.materials.map(m => `
-      <div class="manifest-line">
-        <div class="mn">${m.name}</div>
-        <div class="ids">${m.ids.join(', ')}</div>
-      </div>
-    `).join('') || '<div class="manifest-line"><div class="mn">No material currently recorded</div></div>';
 
     modal.innerHTML = `
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
@@ -224,7 +220,7 @@ export function createSchoolsView({ api }) {
         }
       </div>
       <div class="manifest-title">Material manifest</div>
-      ${manifestLines}
+      <div id="itemsSection"></div>
       ${isWarehouse ? '' : `
         <div class="proposal-box">
           <div class="l">Notes</div>
@@ -235,6 +231,14 @@ export function createSchoolsView({ api }) {
     `;
     document.getElementById('overlay').classList.add('open');
     document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+    renderItemsSection(document.getElementById('itemsSection'), {
+      api, location: s, materials, items, isAdmin,
+      onChange: async () => {
+        await refresh();
+        const refreshed = isWarehouse ? computeWarehouse() : computeSchools().find(sch => sch.id === s.id);
+        if (refreshed) openDetailModal(refreshed);
+      },
+    });
     if (!isWarehouse && isAdmin) {
       document.getElementById('editSchoolBtn').addEventListener('click', () => openSchoolForm(s));
     }
