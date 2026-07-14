@@ -79,6 +79,11 @@ create policy "locations: admin can update"
   using (public.is_admin())
   with check (public.is_admin());
 
+-- Seed the single warehouse location. Idempotent: safe to re-run.
+insert into public.locations (name, type)
+select 'Warehouse', 'warehouse'
+where not exists (select 1 from public.locations where type = 'warehouse');
+
 -- ---------- materials ----------
 create table public.materials (
   id uuid primary key default gen_random_uuid(),
@@ -101,7 +106,8 @@ create policy "materials: admin can insert"
 create table public.items (
   id text primary key,
   material_id uuid not null references public.materials(id),
-  current_location_id uuid not null references public.locations(id)
+  current_location_id uuid not null references public.locations(id),
+  retired boolean not null default false
 );
 
 create index items_current_location_id_idx on public.items(current_location_id);

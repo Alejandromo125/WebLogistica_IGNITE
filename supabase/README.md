@@ -21,3 +21,10 @@ truth for tables and Row Level Security policies, applied manually via the Supab
 
 Authentication -> Users -> Invite user, entering their email. They arrive as `role = 'viewer'`
 automatically. There is no public signup form in the app itself.
+
+## Applying incremental changes to an existing project
+
+`schema.sql` is only for a brand-new project. Once a project is live, apply new changes via the
+numbered files in `supabase/migrations/`, in order, the same way as `schema.sql` — paste each
+file's contents into SQL Editor → New Query and run it once. Each migration file is written to be
+safe to run more than once (idempotent) in case you're unsure whether it already ran.
