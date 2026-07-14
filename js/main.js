@@ -1,8 +1,13 @@
 // js/main.js
 import { supabase } from './supabaseClient.js';
 import { createAuthModule } from './auth.js';
+import { createApi } from './api.js';
+import { createSchoolsView } from './schools.js';
 
 const auth = createAuthModule(supabase);
+const api = createApi(supabase);
+const schoolsView = createSchoolsView({ api });
+schoolsView.clear();
 
 function setAuthStatus(msg, kind) {
   const el = document.getElementById('authStatus');
@@ -19,10 +24,12 @@ async function refreshAuthUI() {
       setAuthStatus(`Logged in as ${profile.role}`, 'live');
       loginForm.style.display = 'none';
       logoutBtn.style.display = '';
+      await schoolsView.loadAndRender(profile.role === 'admin');
     } else {
       setAuthStatus('Not logged in.', 'idle');
       loginForm.style.display = '';
       logoutBtn.style.display = 'none';
+      schoolsView.clear();
     }
   } catch (err) {
     setAuthStatus('Could not check session: ' + err.message, 'error');
