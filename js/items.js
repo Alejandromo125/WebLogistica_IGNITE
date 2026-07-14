@@ -1,4 +1,6 @@
 // js/items.js
+import { escapeHtml } from './schools.js';
+
 export function renderItemsSection(container, ctx) {
   const { api, location, materials, items, isAdmin, onChange } = ctx;
   const locItems = items.filter(i => i.current_location_id === location.id && !i.retired);
@@ -12,9 +14,12 @@ export function renderItemsSection(container, ctx) {
 
   const manifestHtml = Array.from(byMaterial.entries()).map(([name, itemsForMaterial]) => `
     <div class="manifest-line">
-      <div class="mn">${name}</div>
+      <div class="mn">${escapeHtml(name)}</div>
       <div class="ids">
-        ${itemsForMaterial.map(i => `<span>${i.id}${isAdmin ? ` <button type="button" class="retire-item-btn" data-item="${i.id}" style="border:none; background:none; color:var(--rust); cursor:pointer; font-family:inherit;" title="Retire ${i.id}">✕</button>` : ''}</span>`).join(', ')}
+        ${itemsForMaterial.map(i => {
+          const idEsc = escapeHtml(i.id);
+          return `<span>${idEsc}${isAdmin ? ` <button type="button" class="retire-item-btn" data-item="${idEsc}" style="border:none; background:none; color:var(--rust); cursor:pointer; font-family:inherit;" title="Retire ${idEsc}">✕</button>` : ''}</span>`;
+        }).join(', ')}
       </div>
     </div>
   `).join('') || '<div class="manifest-line"><div class="mn">No material currently recorded</div></div>';
@@ -29,7 +34,7 @@ export function renderItemsSection(container, ctx) {
         <label style="flex:1; min-width:160px;">Material
           <input name="materialName" required list="materialOptions" style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
           <datalist id="materialOptions">
-            ${materials.map(m => `<option value="${m.name}">`).join('')}
+            ${materials.map(m => `<option value="${escapeHtml(m.name)}">`).join('')}
           </datalist>
         </label>
         <button type="submit" class="chip">+ Add item</button>

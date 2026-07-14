@@ -1,6 +1,13 @@
 // js/schools.js
 import { renderItemsSection } from './items.js';
 
+export function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
 export function createSchoolsView({ api }) {
   let locations = [];
   let materials = [];
@@ -67,9 +74,10 @@ export function createSchoolsView({ api }) {
       const row = document.createElement('div');
       row.className = 'chart-row';
       const active = state.material === name;
+      const nameEsc = escapeHtml(name);
       row.innerHTML = `
-        <div class="mname" title="${name}">${name}</div>
-        <div class="bar-track ${active ? 'active' : ''}" data-mat="${name}">
+        <div class="mname" title="${nameEsc}">${nameEsc}</div>
+        <div class="bar-track ${active ? 'active' : ''}" data-mat="${nameEsc}">
           <div class="bar-fill" style="width:${(count / max * 100).toFixed(1)}%"></div>
         </div>
         <div class="count">${count}</div>
@@ -126,7 +134,7 @@ export function createSchoolsView({ api }) {
     if (state.material) {
       const clear = document.createElement('button');
       clear.className = 'chip active';
-      clear.innerHTML = `Material: ${state.material} ✕`;
+      clear.innerHTML = `Material: ${escapeHtml(state.material)} ✕`;
       clear.addEventListener('click', () => { state.material = null; renderAll(); });
       bar.appendChild(clear);
     }
@@ -162,12 +170,12 @@ export function createSchoolsView({ api }) {
       const card = document.createElement('div');
       card.className = 'card';
       const tierClass = s.tier === 'Tier1' ? 't1' : 't2';
-      const chipsHtml = s.materials.slice(0, 4).map(m => `<span class="matchip">${m.name} ×${m.count}</span>`).join('');
+      const chipsHtml = s.materials.slice(0, 4).map(m => `<span class="matchip">${escapeHtml(m.name)} ×${m.count}</span>`).join('');
       const moreHtml = s.materials.length > 4 ? `<span class="matchip more">+${s.materials.length - 4} more</span>` : '';
       card.innerHTML = `
         <div class="punch"></div>
         <div class="tierbadge ${tierClass}">${s.tier || 'N/A'}</div>
-        <div class="cname">${s.name}</div>
+        <div class="cname">${escapeHtml(s.name)}</div>
         <div class="metaline">${s.totalUnits} units · ${s.materials.length} material line${s.materials.length === 1 ? '' : 's'}</div>
         <div class="chiprow">${chipsHtml || '<span class="matchip">no material recorded</span>'}${moreHtml}</div>
       `;
@@ -186,12 +194,12 @@ export function createSchoolsView({ api }) {
     container.innerHTML = '';
     const card = document.createElement('div');
     card.className = 'card';
-    const chipsHtml = wh.materials.slice(0, 6).map(m => `<span class="matchip">${m.name} ×${m.count}</span>`).join('');
+    const chipsHtml = wh.materials.slice(0, 6).map(m => `<span class="matchip">${escapeHtml(m.name)} ×${m.count}</span>`).join('');
     const moreHtml = wh.materials.length > 6 ? `<span class="matchip more">+${wh.materials.length - 6} more</span>` : '';
     card.innerHTML = `
       <div class="punch"></div>
       <div class="tierbadge" style="color:var(--slate);">WAREHOUSE</div>
-      <div class="cname">${wh.name}</div>
+      <div class="cname">${escapeHtml(wh.name)}</div>
       <div class="metaline">${wh.totalUnits} units in stock · ${wh.materials.length} material line${wh.materials.length === 1 ? '' : 's'}</div>
       <div class="chiprow">${chipsHtml || '<span class="matchip">no material recorded</span>'}${moreHtml}</div>
     `;
@@ -206,7 +214,7 @@ export function createSchoolsView({ api }) {
 
     modal.innerHTML = `
       <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
-      <h3>${s.name}</h3>
+      <h3>${escapeHtml(s.name)}</h3>
       ${isWarehouse
         ? '<div class="modal-tier" style="color:var(--slate)">Central warehouse</div>'
         : `<div class="modal-tier" style="color:var(--${tierClass === 't1' ? 'rust' : 'teal'})">${s.tier || 'Tier not recorded'}</div>`
@@ -224,7 +232,7 @@ export function createSchoolsView({ api }) {
       ${isWarehouse ? '' : `
         <div class="proposal-box">
           <div class="l">Notes</div>
-          <div>${s.notes ? s.notes : 'No notes recorded.'}</div>
+          <div>${s.notes ? escapeHtml(s.notes) : 'No notes recorded.'}</div>
         </div>
       `}
       ${(!isWarehouse && isAdmin) ? '<button id="editSchoolBtn" class="chip" style="margin-top:16px;">Edit school</button>' : ''}
@@ -257,7 +265,7 @@ export function createSchoolsView({ api }) {
       <h3>${existing ? 'Edit school' : 'Add school'}</h3>
       <form id="schoolForm">
         <label style="${formStyle}">Name
-          <input name="name" required value="${existing ? existing.name : ''}" style="${inputStyle}">
+          <input name="name" required value="${existing ? escapeHtml(existing.name) : ''}" style="${inputStyle}">
         </label>
         <label style="${formStyle}">Tier
           <select name="tier" style="${inputStyle}">
@@ -270,7 +278,7 @@ export function createSchoolsView({ api }) {
           <input name="students" type="number" min="0" value="${existing && existing.students !== null && existing.students !== undefined ? existing.students : ''}" style="${inputStyle}">
         </label>
         <label style="${formStyle}">Notes
-          <textarea name="notes" rows="3" style="${inputStyle}">${existing && existing.notes ? existing.notes : ''}</textarea>
+          <textarea name="notes" rows="3" style="${inputStyle}">${existing && existing.notes ? escapeHtml(existing.notes) : ''}</textarea>
         </label>
         <div id="schoolFormError" class="live-status error" style="display:none; margin-bottom:10px;"></div>
         <button type="submit" class="chip">Save</button>
