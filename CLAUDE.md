@@ -18,9 +18,9 @@ No build or lint tooling. To view changes, serve the directory with any static f
 `npx http-server -p 8080 .`) and open it in a browser — opening `index.html` directly via
 `file://` will not work, since ES modules require an HTTP origin. There is a small dev-time-only
 unit test suite (Node's built-in test runner, no dependencies): `npm test` runs everything under
-`tests/`. It only covers `js/api.js` and `js/auth.js` (pure functions taking a Supabase client as
-a parameter) — every DOM-rendering module has no automated tests and is verified manually in a
-browser. There is no CI.
+`tests/` — `js/api.js` and `js/auth.js` (pure functions taking a Supabase client as a parameter)
+plus one trivial harness sanity check. Every DOM-rendering module has no automated tests and is
+verified manually in a browser. There is no CI.
 
 ## Architecture
 
@@ -47,8 +47,8 @@ browser. There is no CI.
    directly.
 
 4. **`js/auth.js`**: wraps Supabase Auth (sign in/out, current session, current profile — a row in
-   the `profiles` table carrying `role` = `'admin'` or `'viewer'`, plus `email`). Also
-   client-injected and unit-tested the same way as `js/api.js`.
+   the `profiles` table carrying `role` = `'admin'` or `'viewer'`). Also client-injected and
+   unit-tested the same way as `js/api.js`.
 
 5. **Rendering modules**, each `renderX(container, ctx)` (or, for the two page-level views,
    `createXView({ api, ... })` returning `{ loadAndRender, clear, ... }`) — no automated tests,
