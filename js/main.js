@@ -133,18 +133,18 @@ async function refreshAuthUI() {
   isAdmin = profile.role === 'admin';
   currentUserId = profile.id;
   renderAccountArea(profile);
-  tabBar.style.display = '';
 
   try {
     await store.refresh();
   } catch (err) {
     // Data load failed, but the session itself is fine — show the error in the
-    // viewport (tab bar/account area stay put), not the login screen.
+    // viewport (tab bar stays hidden, account area stays put), not the login screen.
     viewport.innerHTML = '<section><div class="empty-note" id="loadErrorNote"></div></section>';
     document.getElementById('loadErrorNote').textContent = 'Could not load data: ' + err.message;
     return;
   }
 
+  tabBar.style.display = '';
   if (!window.location.hash) window.location.hash = '#/overview';
   await renderRoute(router.current());
 }
