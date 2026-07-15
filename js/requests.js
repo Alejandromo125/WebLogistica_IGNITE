@@ -144,18 +144,17 @@ function renderApproveForm(container, req, ctx) {
   });
 }
 
-export function createRequestsView({ api, onStockChange }) {
-  let requests = [];
-  let locations = [];
-  let materials = [];
-  let items = [];
-  let currentUserId = null;
+export function renderRequests(container, ctx) {
+  const { api, store, currentUserId } = ctx;
+  const requests = store.getRequests();
+  const locations = store.getLocations();
+  const materials = store.getMaterials();
+  const items = store.getItems();
 
   function locationName(id) {
     const loc = locations.find(l => l.id === id);
     return loc ? loc.name : 'Unknown location';
   }
-
   function materialName(id) {
     const mat = materials.find(m => m.id === id);
     return mat ? mat.name : 'Unknown material';
@@ -174,10 +173,7 @@ export function createRequestsView({ api, onStockChange }) {
     `;
     renderApproveForm(row.querySelector('.approve-area'), req, {
       api, locations, materials, items,
-      onChange: async () => {
-        await refresh();
-        await onStockChange();
-      },
+      onChange: async () => { await store.refresh(); await ctx.rerender(); },
     });
     row.querySelector('.deny-btn').addEventListener('click', async () => {
       if (!confirm('Deny this request?')) return;
@@ -187,7 +183,8 @@ export function createRequestsView({ api, onStockChange }) {
           resolved_by: currentUserId,
           resolved_at: new Date().toISOString(),
         });
-        await refresh();
+        await store.refresh();
+        await ctx.rerender();
       } catch (err) {
         alert('Could not deny: ' + err.message);
       }
@@ -206,65 +203,35 @@ export function createRequestsView({ api, onStockChange }) {
     return row;
   }
 
-  function renderAll() {
-    const container = document.getElementById('requestsSection');
-    const pending = requests.filter(r => r.status === 'pending')
-      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    const resolved = requests.filter(r => r.status !== 'pending')
-      .sort((a, b) => new Date(b.resolved_at) - new Date(a.resolved_at))
-      .slice(0, 10);
-    container.innerHTML = '';
-    if (pending.length === 0) {
-      const note = document.createElement('div');
-      note.className = 'empty-note';
-      note.textContent = 'No pending requests.';
-      container.appendChild(note);
-    } else {
-      pending.forEach(req => container.appendChild(renderPendingRow(req)));
-    }
-    if (resolved.length > 0) {
-      const heading = document.createElement('div');
-      heading.className = 'manifest-title';
-      heading.textContent = 'Recently resolved';
-      container.appendChild(heading);
-      resolved.forEach(req => container.appendChild(renderResolvedRow(req)));
-    }
-  }
+  const pending = requests.filter(r => r.status === 'pending')
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const resolved = requests.filter(r => r.status !== 'pending')
+    .sort((a, b) => new Date(b.resolved_at) - new Date(a.resolved_at))
+    .slice(0, 10);
 
-  async function refresh() {
-    [requests, locations, materials, items] = await Promise.all([
-      api.listRequests(),
-      api.listLocations(),
-      api.listMaterials(),
-      api.listItems(),
-    ]);
-    renderAll();
+  container.innerHTML = `
+    <section>
+      <div class="section-head">
+        <h2>Requests</h2>
+        <div class="tag">pending material requests</div>
+      </div>
+      <div id="requestsSection"></div>
+    </section>
+  `;
+  const section = container.querySelector('#requestsSection');
+  if (pending.length === 0) {
+    const note = document.createElement('div');
+    note.className = 'empty-note';
+    note.textContent = 'No pending requests.';
+    section.appendChild(note);
+  } else {
+    pending.forEach(req => section.appendChild(renderPendingRow(req)));
   }
-
-  async function loadAndRender(isAdminFlag, userId) {
-    currentUserId = userId;
-    const wrap = document.getElementById('requestsSectionWrap');
-    if (!isAdminFlag) {
-      wrap.style.display = 'none';
-      return;
-    }
-    wrap.style.display = '';
-    try {
-      await refresh();
-    } catch (err) {
-      document.getElementById('requestsSection').innerHTML =
-        `<div class="empty-note">Could not load requests: ${escapeHtml(err.message)}</div>`;
-    }
+  if (resolved.length > 0) {
+    const heading = document.createElement('div');
+    heading.className = 'manifest-title';
+    heading.textContent = 'Recently resolved';
+    section.appendChild(heading);
+    resolved.forEach(req => section.appendChild(renderResolvedRow(req)));
   }
-
-  function clear() {
-    requests = [];
-    locations = [];
-    materials = [];
-    items = [];
-    currentUserId = null;
-    document.getElementById('requestsSectionWrap').style.display = 'none';
-  }
-
-  return { loadAndRender, clear };
 }
