@@ -36,22 +36,26 @@ function makeFakeClient(responses) {
         },
         update(changes) {
           calls.push(['update', table, changes]);
-          return {
+          const chain = {
             eq(col, val) {
               calls.push(['eq', col, val]);
+              return chain;
+            },
+            select() {
               return {
-                select() {
-                  return {
-                    single() {
-                      return Promise.resolve(behavior.update);
-                    },
-                  };
+                single() {
+                  return Promise.resolve(behavior.update);
                 },
               };
             },
           };
+          return chain;
         },
       };
+    },
+    rpc(fn, params) {
+      calls.push(['rpc', fn, params]);
+      return Promise.resolve(responses.rpc);
     },
   };
 }
@@ -149,5 +153,74 @@ test('updateItem throws with the Supabase error message on failure', async () =>
   await assert.rejects(
     () => api.updateItem('R-102', { retired: true }),
     (err) => { assert.equal(err.message, 'update failed'); return true; }
+  );
+});
+
+test('createRequest inserts and returns the new row', async () => {
+  const row = { id: 'req1', requested_by: 'u1', location_id: 'l1', material_id: 'm1', quantity: 3, status: 'pending' };
+  const client = makeFakeClient({ requests: { insert: { data: row, error: null } } });
+  const api = createApi(client);
+  const result = await api.createRequest({ location_id: 'l1', material_id: 'm1', quantity: 3 });
+  assert.deepEqual(result, row);
+  assert.deepEqual(client.calls[0], ['insert', 'requests', { location_id: 'l1', material_id: 'm1', quantity: 3 }]);
+});
+
+test('createRequest throws with the Supabase error message on failure', async () => {
+  const client = makeFakeClient({ requests: { insert: { data: null, error: { message: 'quantity must be positive' } } } });
+  const api = createApi(client);
+  await assert.rejects(
+    () => api.createRequest({ location_id: 'l1', material_id: 'm1', quantity: 0 }),
+    (err) => { assert.equal(err.message, 'quantity must be positive'); return true; }
+  );
+});
+
+test('listRequests returns all requests', async () => {
+  const rows = [{ id: 'req1', status: 'pending', profiles: { email: 'viewer@example.com' } }];
+  const client = makeFakeClient({ requests: { select: { data: rows, error: null } } });
+  const api = createApi(client);
+  const result = await api.listRequests();
+  assert.deepEqual(result, rows);
+});
+
+test('updateRequest updates a pending request by id and returns the updated row', async () => {
+  const row = { id: 'req1', status: 'denied', resolved_by: 'admin1' };
+  const client = makeFakeClient({ requests: { update: { data: row, error: null } } });
+  const api = createApi(client);
+  const result = await api.updateRequest('req1', { status: 'denied', resolved_by: 'admin1', resolved_at: '2026-07-14T00:00:00Z' });
+  assert.deepEqual(result, row);
+  assert.deepEqual(client.calls[0], ['update', 'requests', { status: 'denied', resolved_by: 'admin1', resolved_at: '2026-07-14T00:00:00Z' }]);
+  assert.deepEqual(client.calls[1], ['eq', 'id', 'req1']);
+  assert.deepEqual(client.calls[2], ['eq', 'status', 'pending']);
+});
+
+test('updateRequest throws when the request is no longer pending', async () => {
+  const client = makeFakeClient({ requests: { update: { data: null, error: { message: 'JSON object requested, multiple (or no) rows returned' } } } });
+  const api = createApi(client);
+  await assert.rejects(
+    () => api.updateRequest('req1', { status: 'denied' }),
+    (err) => { assert.equal(err.message, 'JSON object requested, multiple (or no) rows returned'); return true; }
+  );
+});
+
+test('performTransfer calls the perform_transfer RPC with the expected params and returns its result', async () => {
+  const client = makeFakeClient({ rpc: { data: null, error: null } });
+  const api = createApi(client);
+  const result = await api.performTransfer(['R-101', 'R-102'], 'loc-warehouse', 'loc-school1', 'restock', 'req1');
+  assert.deepEqual(result, null);
+  assert.deepEqual(client.calls[0], ['rpc', 'perform_transfer', {
+    item_ids: ['R-101', 'R-102'],
+    from_location_id: 'loc-warehouse',
+    to_location_id: 'loc-school1',
+    note: 'restock',
+    request_id: 'req1',
+  }]);
+});
+
+test('performTransfer throws with the Supabase error message on failure', async () => {
+  const client = makeFakeClient({ rpc: { data: null, error: { message: 'item(s) not available at expected location: R-101' } } });
+  const api = createApi(client);
+  await assert.rejects(
+    () => api.performTransfer(['R-101'], 'loc-warehouse', 'loc-school1', null, null),
+    (err) => { assert.equal(err.message, 'item(s) not available at expected location: R-101'); return true; }
   );
 });

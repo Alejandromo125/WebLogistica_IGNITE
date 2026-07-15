@@ -48,9 +48,40 @@ export function createApi(client) {
     return data;
   }
 
+  async function createRequest(request) {
+    const { data, error } = await client.from('requests').insert(request).select().single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async function listRequests() {
+    const { data, error } = await client.from('requests').select('*, profiles(email)');
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async function updateRequest(id, changes) {
+    const { data, error } = await client.from('requests').update(changes).eq('id', id).eq('status', 'pending').select().single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async function performTransfer(itemIds, fromLocationId, toLocationId, note, requestId) {
+    const { data, error } = await client.rpc('perform_transfer', {
+      item_ids: itemIds,
+      from_location_id: fromLocationId,
+      to_location_id: toLocationId,
+      note,
+      request_id: requestId,
+    });
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
   return {
     listLocations, createLocation, updateLocation,
     listMaterials, createMaterial,
     listItems, createItem, updateItem,
+    createRequest, listRequests, updateRequest, performTransfer,
   };
 }
