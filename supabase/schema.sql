@@ -11,10 +11,10 @@ create table public.profiles (
 
 alter table public.profiles enable row level security;
 
-create policy "profiles: users can read their own profile"
+create policy "profiles: any authenticated user can read"
   on public.profiles for select
   to authenticated
-  using (id = auth.uid());
+  using (true);
 
 create or replace function public.is_admin()
 returns boolean
@@ -28,11 +28,6 @@ as $$
     where id = auth.uid() and role = 'admin'
   );
 $$;
-
-create policy "profiles: admin can read all profiles"
-  on public.profiles for select
-  to authenticated
-  using (public.is_admin());
 
 -- New auth.users rows get a viewer profile automatically.
 -- The first admin is bootstrapped manually via SQL (see README).
