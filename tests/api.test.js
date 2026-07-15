@@ -224,3 +224,22 @@ test('performTransfer throws with the Supabase error message on failure', async 
     (err) => { assert.equal(err.message, 'item(s) not available at expected location: R-101'); return true; }
   );
 });
+
+test('listMovements returns all movements', async () => {
+  const rows = [{
+    id: 'mv1', item_id: 'R-101', from_location_id: 'l1', to_location_id: 'l2',
+    moved_by: 'admin1', moved_at: '2026-07-15T00:00:00Z', note: 'restock', request_id: null,
+    mover: { email: 'admin@example.com' },
+  }];
+  const client = makeFakeClient({ movements: { select: { data: rows, error: null } } });
+  const api = createApi(client);
+  const result = await api.listMovements();
+  assert.deepEqual(result, rows);
+  assert.deepEqual(client.calls[0], ['select', 'movements', '*, mover:moved_by(email)']);
+});
+
+test('listMovements throws with the Supabase error message on failure', async () => {
+  const client = makeFakeClient({ movements: { select: { data: null, error: { message: 'boom' } } } });
+  const api = createApi(client);
+  await assert.rejects(() => api.listMovements(), (err) => { assert.equal(err.message, 'boom'); return true; });
+});
