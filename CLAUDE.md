@@ -50,29 +50,39 @@ verified manually in a browser. There is no CI.
    the `profiles` table carrying `role` = `'admin'` or `'viewer'`). Also client-injected and
    unit-tested the same way as `js/api.js`.
 
-5. **Rendering modules**, each `renderX(container, ctx)` (or, for the two page-level views,
-   `createXView({ api, ... })` returning `{ loadAndRender, clear, ... }`) — no automated tests,
-   verified manually in the browser:
-   - `js/schools.js` — the page-level view (`createSchoolsView`): hero stats, material
-     distribution chart, tier split, the Warehouse card, the school grid, search/filter state, and
-     each location's detail modal. Exports `escapeHtml()`, used by every other rendering module to
-     safely interpolate user-entered text into `innerHTML`. Constructed exactly once per page load
-     (in `js/main.js`); its page-level DOM event listeners are registered exactly once, inside the
-     factory, not per render.
-   - `js/items.js` — the material manifest inside a location's modal: admin add/retire items,
+5. **Routing, state, and rendering modules** — no automated tests except where noted, verified
+   manually in the browser:
+   - `js/router.js` — hash-route parsing (`parseRoute(hash)`) and router state management
+     (`createRouter`).
+   - `js/store.js` — shared data store (`createStore(api)`) managing the five collections
+     (materials, locations, schools, items, requests) plus derived per-location computations.
+   - `js/overview.js` — `renderOverview` for the `#/overview` route: hero stats, material
+     distribution chart, tier split, and Warehouse card(s).
+   - `js/schools.js` — `renderSchools` for the `#/schools` route: school grid and search/filter
+     state. Exports `escapeHtml()`, used by every rendering module to safely interpolate
+     user-entered text into `innerHTML`.
+   - `js/locationDetail.js` — `renderLocationDetail` for the `#/locations/:id` route: replaces
+     the old detail modal, rendering a single location's full inventory, actions, and history.
+   - `js/schoolForm.js` — `openSchoolForm`: a shared add/edit-school modal used by overview and
+     location-detail routes.
+   - `js/items.js` — the material manifest inside location detail: admin add/retire items,
      the per-material-line "Transfer" action (admin only).
-   - `js/transfers.js` — the transfer form itself (item checkboxes, destination, note), used by
-     both `js/items.js`'s direct-transfer action and `js/requests.js`'s approval flow.
-   - `js/requests.js` — the viewer's "Request materials" form (inside a school's modal) and the
-     admin-only "Requests" dashboard section (`createRequestsView`, a second page-level view,
-     approve/deny a pending request).
-   - `js/history.js` — the read-only "Movement history" section inside every location's modal,
+   - `js/transfers.js` — the transfer form (item checkboxes, destination, note), used by both
+     `js/items.js`'s direct-transfer action and `js/requests.js`'s approval flow.
+   - `js/history.js` — the read-only "Movement history" section inside every location detail,
      listing every `movements` row that touched it, newest first.
+   - `js/requests.js` — `renderRequests` (replacing `createRequestsView`), the `#/requests`
+     route: the viewer's "Request materials" form and the admin-only requests dashboard
+     (approve/deny a pending request).
 
-6. **`js/main.js`**: the app's single entry point. Wires up `js/auth.js` + `js/api.js`,
-   constructs `schoolsView`/`requestsView`, and drives the login/logout UI — on every auth state
-   change, calls each view's `loadAndRender(isAdmin, userId)` (logged in) or `clear()` (logged
-   out).
+6. **`js/main.js`**: the app's single entry point. Constructs `store` and `router` alongside
+   `auth` and `api`, maps hash-route changes to render functions, and renders a login-only screen
+   (no tab bar) when logged out.
+
+   The app uses hash-based routing (`#/overview`, `#/schools`, `#/locations/:id`, `#/requests`);
+   `tests/router.test.js` covers `parseRoute` and `tests/store.test.js` covers `createStore`.
+   Note: there are now two warehouse locations (`Warehouse Madrid`, `Warehouse Barcelona`) —
+   `computeWarehouses()` (plural) in `js/store.js`, not a single fixed warehouse.
 
 7. **`supabase/schema.sql`** is the fresh-install source of truth for the database (tables, RLS
    policies, the `perform_transfer` RPC); **`supabase/migrations/`** holds incremental changes
