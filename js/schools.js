@@ -34,9 +34,9 @@ export function renderSchools(container, ctx) {
           <div class="tag" id="resultCount">0 schools</div>
         </div>
       </div>
-      <div style="max-width:340px; margin-bottom:16px; background:var(--card); border:1px solid var(--line);">
+      <div style="max-width:340px; margin-bottom:16px; background:var(--surface); border-radius:10px;">
         <input id="searchInput" type="text" placeholder="Search school name…" aria-label="Search schools"
-          style="width:100%; border:none; background:none; padding:8px 12px; font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--ink);">
+          style="width:100%; border:none; background:none; padding:10px 12px; font-family:'Poppins', sans-serif; font-size:14px; color:var(--text);">
       </div>
       <div class="filterbar" id="tierFilterBar"></div>
       <div class="grid" id="schoolGrid"></div>

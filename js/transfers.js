@@ -16,12 +16,12 @@ export function renderTransferForm(container, ctx) {
     <div class="manifest-title">Transfer ${escapeHtml(materialName)}</div>
     ${checkboxesHtml}
     <label style="display:block; margin-top:10px;">Destination
-      <select name="destination" style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+      <select name="destination" style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
         ${destOptionsHtml}
       </select>
     </label>
     <label style="display:block; margin-top:10px;">Note (optional)
-      <input name="note" style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+      <input name="note" style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
     </label>
     <div id="transferError" class="live-status error" style="display:none; margin-top:8px;"></div>
     <button type="button" id="transferSubmitBtn" class="chip" style="margin-top:10px;" disabled>Transfer</button>

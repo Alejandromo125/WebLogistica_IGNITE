@@ -17,12 +17,12 @@ export function renderItemsSection(container, ctx) {
     <div class="manifest-line">
       <div class="mn">
         ${escapeHtml(name)}
-        ${isAdmin ? `<button type="button" class="transfer-material-btn" data-material="${escapeHtml(name)}" style="margin-left:8px; border:1px solid var(--line); background:none; cursor:pointer; font-family:inherit; font-size:11px; padding:1px 6px;">Transfer</button>` : ''}
+        ${isAdmin ? `<button type="button" class="transfer-material-btn" data-material="${escapeHtml(name)}" style="margin-left:8px; border:1px solid var(--border); border-radius:6px; background:none; cursor:pointer; font-family:inherit; font-size:11px; padding:2px 8px; color:var(--text-muted);">Transfer</button>` : ''}
       </div>
       <div class="ids">
         ${itemsForMaterial.map(i => {
           const idEsc = escapeHtml(i.id);
-          return `<span>${idEsc}${isAdmin ? ` <button type="button" class="retire-item-btn" data-item="${idEsc}" style="border:none; background:none; color:var(--rust); cursor:pointer; font-family:inherit;" title="Retire ${idEsc}">✕</button>` : ''}</span>`;
+          return `<span>${idEsc}${isAdmin ? ` <button type="button" class="retire-item-btn" data-item="${idEsc}" style="border:none; background:none; color:var(--danger); cursor:pointer; font-family:inherit;" title="Retire ${idEsc}">✕</button>` : ''}</span>`;
         }).join(', ')}
       </div>
       <div class="transfer-form-area" data-material="${escapeHtml(name)}"></div>
@@ -34,10 +34,10 @@ export function renderItemsSection(container, ctx) {
     ${isAdmin ? `
       <form id="addItemForm" style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
         <label style="flex:1; min-width:140px;">Unit ID
-          <input name="itemId" required style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+          <input name="itemId" required style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
         </label>
         <label style="flex:1; min-width:160px;">Material
-          <input name="materialName" required list="materialOptions" style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+          <input name="materialName" required list="materialOptions" style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
           <datalist id="materialOptions">
             ${materials.map(m => `<option value="${escapeHtml(m.name)}">`).join('')}
           </datalist>

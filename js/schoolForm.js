@@ -6,7 +6,7 @@ export function openSchoolForm(existing, ctx) {
   const modal = document.getElementById('modalContent');
   const overlay = document.getElementById('overlay');
   const formStyle = "display:block; margin-bottom:14px;";
-  const inputStyle = "width:100%; border:1px solid var(--line); background:var(--card); padding:8px 10px; font-family:'IBM Plex Mono', monospace; font-size:13px; margin-top:4px;";
+  const inputStyle = "width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:9px 11px; font-family:'Poppins', sans-serif; font-size:13px; margin-top:4px; color:var(--text);";
 
   modal.innerHTML = `
     <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>

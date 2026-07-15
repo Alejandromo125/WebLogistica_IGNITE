@@ -8,6 +8,29 @@ import { renderOverview } from './overview.js';
 import { renderSchools } from './schools.js';
 import { renderLocationDetail } from './locationDetail.js';
 import { renderRequests } from './requests.js';
+import { getInitialTheme, applyTheme } from './theme.js';
+import { mountParticles } from './particles.js';
+
+const THEME_KEY = 'ignite-vault-theme';
+let currentTheme = getInitialTheme(localStorage.getItem(THEME_KEY));
+applyTheme(currentTheme);
+mountParticles(document.body);
+
+const themeToggleBtn = document.getElementById('themeToggle');
+function updateThemeToggleButton() {
+  themeToggleBtn.textContent = currentTheme === 'light' ? '🌙' : '☀️';
+  themeToggleBtn.setAttribute(
+    'aria-label',
+    currentTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
+  );
+}
+updateThemeToggleButton();
+themeToggleBtn.addEventListener('click', () => {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  applyTheme(currentTheme);
+  localStorage.setItem(THEME_KEY, currentTheme);
+  updateThemeToggleButton();
+});
 
 const auth = createAuthModule(supabase);
 const api = createApi(supabase);
@@ -70,7 +93,7 @@ function renderLoginScreen(message) {
   tabBar.innerHTML = '';
   viewport.innerHTML = `
     <div class="login-screen">
-      <h2>Stock Manifest — Sign in</h2>
+      <h2>Ignite Vault — Sign in</h2>
       <form id="loginForm">
         <label>Email<input name="email" type="email" required></label>
         <label>Password<input name="password" type="password" required></label>
