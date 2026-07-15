@@ -401,5 +401,5 @@ export function createSchoolsView({ api }) {
   });
   document.getElementById('addSchoolBtn').addEventListener('click', () => openSchoolForm(null));
 
-  return { loadAndRender, clear };
+  return { loadAndRender, clear, refresh };
 }
