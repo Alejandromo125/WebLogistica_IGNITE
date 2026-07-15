@@ -66,46 +66,32 @@
   }
   .brand-text span{ color:var(--amber); }
 
-  .searchwrap{
-    display:flex; align-items:center; gap:8px;
-    background:rgba(243,241,233,0.08);
+  /* ---------- Tab bar ---------- */
+  .tabbar{
+    display:flex; gap:6px; flex-wrap:wrap;
+  }
+  .tabbar .tab{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:8px 16px;
+    background:none;
     border:1px solid rgba(243,241,233,0.35);
-    padding:8px 12px;
-    min-width:230px;
-    flex:1; max-width:340px;
+    color:var(--paper);
+    cursor:pointer;
+    transition:background .15s, color .15s;
   }
-  .searchwrap input{
-    background:none; border:none; color:var(--paper);
-    width:100%; font-size:14px; font-family:'IBM Plex Mono', monospace;
-  }
-  .searchwrap input::placeholder{ color:rgba(243,241,233,0.5); }
-  .searchwrap input:focus{ outline:none; }
-  .searchwrap svg{ flex-shrink:0; opacity:0.7; }
+  .tabbar .tab:hover{ background:rgba(243,241,233,0.12); }
+  .tabbar .tab.active{ background:var(--amber); border-color:var(--amber); color:var(--ink); }
 
-  /* ---------- Live source bar ---------- */
-  .livebar{
-    background:var(--paper-2);
-    border-bottom:1px solid var(--line);
-    padding:10px 24px;
-  }
-  .livebar-inner{
-    max-width:1180px; margin:0 auto;
+  /* ---------- Account area ---------- */
+  .account{
     display:flex; align-items:center; gap:10px; flex-wrap:wrap;
   }
-  .livebar-label{
+  .account .who{
     font-family:'IBM Plex Mono', monospace;
-    font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
-    color:var(--slate); flex-shrink:0;
+    font-size:12.5px; color:var(--paper);
   }
-  .livebar input{
-    flex:1; min-width:220px;
-    border:1px solid var(--line);
-    background:var(--card);
-    padding:7px 10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12.5px;
-    color:var(--ink);
-  }
+
   .live-status{
     font-family:'IBM Plex Mono', monospace;
     font-size:11.5px;
@@ -117,6 +103,34 @@
   .live-status.loading{ color:var(--ink); border-color:var(--ink); }
   .live-status.live{ color:var(--teal); border-color:var(--teal); }
   .live-status.error{ color:var(--rust); border-color:var(--rust); }
+
+  /* ---------- Login screen ---------- */
+  .login-screen{
+    max-width:420px; margin:80px auto; padding:30px;
+    background:var(--card); border:1px solid var(--ink);
+  }
+  .login-screen h2{
+    font-family:'Space Grotesk', sans-serif; font-size:22px; margin:0 0 18px;
+  }
+  .login-screen label{
+    display:block; margin-bottom:14px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px;
+  }
+  .login-screen input{
+    width:100%; border:1px solid var(--line); background:var(--paper);
+    padding:9px 11px; font-family:'IBM Plex Mono', monospace; font-size:13px; margin-top:5px;
+  }
+
+  /* ---------- Back link ---------- */
+  .back-link{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--slate);
+    margin-bottom:18px;
+    text-decoration:none;
+  }
+  .back-link:hover{ color:var(--ink); }
 
   /* ---------- Hero / manifest stamp strip ---------- */
   .hero{
@@ -202,22 +216,15 @@
     height:16px;
     background:var(--paper-2);
     position:relative;
-    cursor:pointer;
   }
   .bar-fill{
     height:100%;
     background:var(--teal);
-    transition:width .5s ease, background .2s ease;
+    transition:width .5s ease;
   }
-  .bar-track.active .bar-fill{ background:var(--rust); }
   .chart-row .count{
     font-family:'IBM Plex Mono', monospace;
     font-size:12.5px; text-align:right; color:var(--slate);
-  }
-  .chart-hint{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px; color:var(--slate);
-    margin-top:14px;
   }
 
   /* ---------- Tier split ---------- */
@@ -253,7 +260,7 @@
   .chip.active{ background:var(--ink); color:var(--paper); }
   .chip .n{ opacity:0.6; margin-left:4px; }
 
-  /* ---------- School grid (tags) ---------- */
+  /* ---------- School / warehouse grid (tags) ---------- */
   .grid{
     display:grid;
     grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
@@ -315,7 +322,7 @@
     padding:30px 0; text-align:center;
   }
 
-  /* ---------- Modal ---------- */
+  /* ---------- Modal (schoolForm only) ---------- */
   .overlay{
     position:fixed; inset:0; background:rgba(28,35,51,0.55);
     display:none; align-items:flex-start; justify-content:center;
@@ -338,11 +345,14 @@
     font-family:'IBM Plex Mono', monospace;
   }
   .modal-close:hover{ background:var(--ink); color:var(--paper); }
-  .modal h3{
+
+  /* ---------- Detail title / tier (modal AND full-page location detail) ---------- */
+  .modal h3, .detail-title{
     font-family:'Space Grotesk', sans-serif;
-    font-size:26px; margin:0 0 4px; padding-right:40px;
+    font-size:26px; margin:0 0 4px;
   }
-  .modal .modal-tier{
+  .modal h3{ padding-right:40px; }
+  .modal-tier{
     font-family:'IBM Plex Mono', monospace;
     font-size:12px; margin-bottom:20px;
   }
@@ -405,82 +415,11 @@
     <div class="mark">M26</div>
     <div class="brand-text">STOCK<span>·</span>MANIFEST</div>
   </div>
-  <div class="searchwrap">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input id="searchInput" type="text" placeholder="Search school name…" aria-label="Search schools">
-  </div>
+  <nav class="tabbar" id="tabBar" style="display:none;"></nav>
+  <div class="account" id="accountArea"></div>
 </header>
 
-<div class="livebar" id="authBar">
-  <div class="livebar-inner">
-    <span class="livebar-label">Account</span>
-    <form id="loginForm" style="display:flex; gap:8px; align-items:center; flex:1; min-width:220px;">
-      <input id="loginEmail" type="email" placeholder="Email" required
-        style="border:1px solid var(--line); background:var(--card); padding:7px 10px; font-family:'IBM Plex Mono', monospace; font-size:12.5px;">
-      <input id="loginPassword" type="password" placeholder="Password" required
-        style="border:1px solid var(--line); background:var(--card); padding:7px 10px; font-family:'IBM Plex Mono', monospace; font-size:12.5px;">
-      <button type="submit" class="chip">Log in</button>
-    </form>
-    <button id="logoutBtn" class="chip" style="display:none;">Log out</button>
-    <span id="authStatus" class="live-status idle">Not logged in.</span>
-  </div>
-</div>
-
-<div class="hero">
-  <div class="hero-eyebrow">Material deployment · Course 26–27 prep</div>
-  <h1>Where every kit, robot and box currently lives — school by school.</h1>
-  <div class="stamps">
-    <div class="stamp"><div class="num" id="statSchools">0</div><div class="lbl">Schools tracked</div></div>
-    <div class="stamp"><div class="num" id="statUnits">0</div><div class="lbl">Units deployed</div></div>
-    <div class="stamp"><div class="num" id="statMaterials">0</div><div class="lbl">Material lines</div></div>
-  </div>
-</div>
-
-<section>
-  <div class="section-head">
-    <h2>Material distribution</h2>
-    <div class="tag">units in the field, by material line</div>
-  </div>
-  <div id="chartArea"></div>
-  <div class="chart-hint">Click a bar to filter the manifest below to schools using that material.</div>
-</section>
-
-<section>
-  <div class="section-head">
-    <h2>Tier split</h2>
-    <div class="tag">school priority tier</div>
-  </div>
-  <div class="tiersplit" id="tierSplit"></div>
-</section>
-
-<section>
-  <div class="section-head">
-    <h2>Warehouse</h2>
-    <div class="tag">central unassigned stock</div>
-  </div>
-  <div id="warehouseCard"></div>
-</section>
-
-<section>
-  <div class="section-head">
-    <h2>School manifest</h2>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <button id="addSchoolBtn" class="chip" style="display:none;">+ Add school</button>
-      <div class="tag" id="resultCount">0 schools</div>
-    </div>
-  </div>
-  <div class="filterbar" id="tierFilterBar"></div>
-  <div class="grid" id="schoolGrid"></div>
-  <div class="empty-note" id="emptyNote" style="display:none;">No schools match this filter. Try clearing the search or material filter.</div>
-</section>
-
-<section id="requestsSectionWrap" style="display:none;">
-  <div class="section-head">
-    <h2>Requests</h2>
-    <div class="tag">pending material requests</div>
-  </div>
-  <div id="requestsSection"></div>
-</section>
+<main id="viewport"></main>
 
 <footer>
   Live data from Supabase · Preparación curso 26-27 · the Google Sheet this app used to read from is retired.
