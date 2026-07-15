@@ -31,8 +31,8 @@ export function renderLocationDetail(container, ctx) {
       <a href="${backHref}" class="back-link">${backLabel}</a>
       <h3 class="detail-title">${escapeHtml(loc.name)}</h3>
       ${isWarehouse
-        ? '<div class="modal-tier" style="color:var(--slate)">Warehouse</div>'
-        : `<div class="modal-tier" style="color:var(--${tierClass === 't1' ? 'rust' : 'teal'})">${loc.tier || 'Tier not recorded'}</div>`
+        ? '<div class="modal-tier" style="color:var(--text-muted)">Warehouse</div>'
+        : `<div class="modal-tier" style="color:var(--${tierClass === 't1' ? 'primary' : 'text-muted'})">${loc.tier || 'Tier not recorded'}</div>`
       }
       <div class="modal-grid">
         ${isWarehouse

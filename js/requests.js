@@ -15,16 +15,16 @@ export function renderRequestSection(container, ctx) {
     ${pendingHtml}
     <form id="requestForm" style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
       <label style="flex:1; min-width:160px;">Material
-        <input name="materialName" required list="requestMaterialOptions" style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+        <input name="materialName" required list="requestMaterialOptions" style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
         <datalist id="requestMaterialOptions">
           ${materials.map(m => `<option value="${escapeHtml(m.name)}">`).join('')}
         </datalist>
       </label>
       <label style="min-width:90px;">Quantity
-        <input name="quantity" type="number" min="1" required style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+        <input name="quantity" type="number" min="1" required style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
       </label>
       <label style="flex:1; min-width:160px;">Note (optional)
-        <input name="note" style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+        <input name="note" style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
       </label>
       <button type="submit" class="chip">Request materials</button>
     </form>
@@ -98,7 +98,7 @@ function renderApproveForm(container, req, ctx) {
     <div class="manifest-title">Approve: ${escapeHtml(materialName)} ×${req.quantity} for ${requestingSchool ? escapeHtml(requestingSchool.name) : 'Unknown school'}</div>
     ${groupsHtml}
     <label style="display:block; margin-top:10px;">Note (optional)
-      <input name="note" style="width:100%; border:1px solid var(--line); background:var(--card); padding:7px 9px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; margin-top:4px;">
+      <input name="note" style="width:100%; border:none; background:var(--surface-muted); border-radius:8px; padding:8px 10px; font-family:'Poppins', sans-serif; font-size:12.5px; margin-top:4px; color:var(--text);">
     </label>
     <div id="approveError" class="live-status error" style="display:none; margin-top:8px;"></div>
     <button type="button" id="approveSubmitBtn" class="chip" style="margin-top:10px;" disabled>Approve</button>

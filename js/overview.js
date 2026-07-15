@@ -23,7 +23,7 @@ export function renderOverview(container, ctx) {
 
   container.innerHTML = `
     <div class="hero">
-      <div class="hero-eyebrow">Material deployment · Course 26–27 prep</div>
+      <div class="hero-eyebrow">Material deployment</div>
       <h1>Where every kit, robot and box currently lives — school by school.</h1>
       <div class="stamps">
         <div class="stamp"><div class="num">${schools.length}</div><div class="lbl">Schools tracked</div></div>
@@ -105,7 +105,7 @@ export function renderOverview(container, ctx) {
       const moreHtml = wh.materials.length > 6 ? `<span class="matchip more">+${wh.materials.length - 6} more</span>` : '';
       card.innerHTML = `
         <div class="punch"></div>
-        <div class="tierbadge" style="color:var(--slate);">WAREHOUSE</div>
+        <div class="tierbadge" style="background:var(--surface-muted); color:var(--text-muted);">WAREHOUSE</div>
         <div class="cname">${escapeHtml(wh.name)}</div>
         <div class="metaline">${wh.totalUnits} units in stock · ${wh.materials.length} material line${wh.materials.length === 1 ? '' : 's'}</div>
         <div class="chiprow">${chipsHtml || '<span class="matchip">no material recorded</span>'}${moreHtml}</div>
