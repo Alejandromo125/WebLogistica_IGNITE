@@ -75,10 +75,14 @@ create policy "locations: admin can update"
   using (public.is_admin())
   with check (public.is_admin());
 
--- Seed the single warehouse location. Idempotent: safe to re-run.
+-- Seed the two warehouse locations. Idempotent: safe to re-run.
 insert into public.locations (name, type)
-select 'Warehouse', 'warehouse'
-where not exists (select 1 from public.locations where type = 'warehouse');
+select 'Warehouse Madrid', 'warehouse'
+where not exists (select 1 from public.locations where name = 'Warehouse Madrid');
+
+insert into public.locations (name, type)
+select 'Warehouse Barcelona', 'warehouse'
+where not exists (select 1 from public.locations where name = 'Warehouse Barcelona');
 
 -- ---------- materials ----------
 create table public.materials (
