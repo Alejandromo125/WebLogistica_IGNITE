@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-"Stock Manifest" — a dashboard for tracking material/equipment deployment (robotics kits, boxes,
-etc.) across schools for course 26-27, plus admin CRUD, a viewer request/approval workflow, and
-movement history. It is deployed via GitHub Pages directly from `index.html` at the repo root
+"Ignite Vault" — a dashboard for tracking material/equipment deployment (robotics kits, boxes,
+etc.) across schools, plus admin CRUD, a viewer request/approval workflow, and movement history.
+It is deployed via GitHub Pages directly from `index.html` at the repo root
 (no build step, no bundler). `index.html` holds markup and CSS; behavior lives in ES modules under
 `js/`, loaded via a single `<script type="module" src="js/main.js">` tag. Data is a Supabase
 project (Postgres + Auth + Row Level Security) — there is no Google Sheet involved anymore (it was
@@ -26,9 +26,13 @@ DOM-rendering module has no automated tests and is verified manually in a browse
 ## Architecture
 
 1. **`index.html`**: the `<style>` block (all styling, using CSS custom properties on `:root` —
-   `--ink`, `--paper`, `--amber`, `--teal`, `--rust`, `--slate`, `--line`, `--card` — as the color
-   system; fonts are Space Grotesk for headings/display, IBM Plex Mono for labels/numbers/mono UI,
-   and IBM Plex Sans for body, loaded from Google Fonts) and a persistent page shell rather than a
+   `--bg-from`/`--bg-to`, `--surface`, `--surface-muted`, `--primary`, `--on-primary`, `--accent`,
+   `--danger`, `--text`, `--text-muted`, `--border` — as the color system, with dark values on
+   `:root` as the default theme and a `:root[data-theme="light"]` block overriding them for the
+   light theme reached via the header's toggle button; fonts are Playfair Display, bold italic,
+   used only for the Overview hero-stat numbers and the login screen's heading, and Poppins for
+   everything else — there is no monospace font anywhere — loaded from Google Fonts) and a
+   persistent page shell rather than a
    set of named section containers. A `<header class="topbar">` holds the brand mark, `#tabBar` (a
    `<nav>` the router populates with tab buttons, hidden via inline `style="display:none"` until
    login) and `#accountArea` (the login form or logged-in account state, populated by
