@@ -1,8 +1,9 @@
 // js/items.js
 import { escapeHtml } from './schools.js';
+import { renderTransferForm } from './transfers.js';
 
 export function renderItemsSection(container, ctx) {
-  const { api, location, materials, items, isAdmin, onChange } = ctx;
+  const { api, location, materials, items, isAdmin, onChange, allLocations } = ctx;
   const locItems = items.filter(i => i.current_location_id === location.id && !i.retired);
   const byMaterial = new Map();
   locItems.forEach(i => {
@@ -14,13 +15,17 @@ export function renderItemsSection(container, ctx) {
 
   const manifestHtml = Array.from(byMaterial.entries()).map(([name, itemsForMaterial]) => `
     <div class="manifest-line">
-      <div class="mn">${escapeHtml(name)}</div>
+      <div class="mn">
+        ${escapeHtml(name)}
+        ${isAdmin ? `<button type="button" class="transfer-material-btn" data-material="${escapeHtml(name)}" style="margin-left:8px; border:1px solid var(--line); background:none; cursor:pointer; font-family:inherit; font-size:11px; padding:1px 6px;">Transfer</button>` : ''}
+      </div>
       <div class="ids">
         ${itemsForMaterial.map(i => {
           const idEsc = escapeHtml(i.id);
           return `<span>${idEsc}${isAdmin ? ` <button type="button" class="retire-item-btn" data-item="${idEsc}" style="border:none; background:none; color:var(--rust); cursor:pointer; font-family:inherit;" title="Retire ${idEsc}">✕</button>` : ''}</span>`;
         }).join(', ')}
       </div>
+      <div class="transfer-form-area" data-material="${escapeHtml(name)}"></div>
     </div>
   `).join('') || '<div class="manifest-line"><div class="mn">No material currently recorded</div></div>';
 
@@ -55,6 +60,26 @@ export function renderItemsSection(container, ctx) {
       } catch (err) {
         alert('Could not retire item: ' + err.message);
       }
+    });
+  });
+
+  container.querySelectorAll('.transfer-material-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.material;
+      const area = container.querySelector(`.transfer-form-area[data-material="${CSS.escape(name)}"]`);
+      if (area.innerHTML) {
+        area.innerHTML = '';
+        return;
+      }
+      const idsForMaterial = byMaterial.get(name).map(i => i.id);
+      renderTransferForm(area, {
+        api,
+        location,
+        materialName: name,
+        itemIds: idsForMaterial,
+        destinations: ctx.allLocations.filter(l => l.id !== location.id),
+        onChange,
+      });
     });
   });
 

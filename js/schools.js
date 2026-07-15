@@ -240,7 +240,7 @@ export function createSchoolsView({ api }) {
     document.getElementById('overlay').classList.add('open');
     document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
     renderItemsSection(document.getElementById('itemsSection'), {
-      api, location: s, materials, items, isAdmin,
+      api, location: s, materials, items, isAdmin, allLocations: locations,
       onChange: async () => {
         await refresh();
         const refreshed = isWarehouse ? computeWarehouse() : computeSchools().find(sch => sch.id === s.id);
