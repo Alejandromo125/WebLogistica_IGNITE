@@ -18,20 +18,26 @@ No build or lint tooling. To view changes, serve the directory with any static f
 `npx http-server -p 8080 .`) and open it in a browser — opening `index.html` directly via
 `file://` will not work, since ES modules require an HTTP origin. There is a small dev-time-only
 unit test suite (Node's built-in test runner, no dependencies): `npm test` runs everything under
-`tests/` — `js/api.js` and `js/auth.js` (pure functions taking a Supabase client as a parameter)
-plus one trivial harness sanity check. Every DOM-rendering module has no automated tests and is
-verified manually in a browser. There is no CI.
+`tests/` — `js/api.js` and `js/auth.js` (pure functions taking a Supabase client as a parameter),
+`js/router.js` (`parseRoute`, pure function, no DOM), and `js/store.js` (`createStore(api)`,
+exercised against an injected fake api, no DOM) — plus one trivial harness sanity check. Every
+DOM-rendering module has no automated tests and is verified manually in a browser. There is no CI.
 
 ## Architecture
 
 1. **`index.html`**: the `<style>` block (all styling, using CSS custom properties on `:root` —
    `--ink`, `--paper`, `--amber`, `--teal`, `--rust`, `--slate`, `--line`, `--card` — as the color
    system; fonts are Space Grotesk for headings/display, IBM Plex Mono for labels/numbers/mono UI,
-   and IBM Plex Sans for body, loaded from Google Fonts) and the static markup shell (header/search
-   bar, hero stats, chart/tier/manifest/requests sections, modal overlay, login form). All dynamic
-   content is rendered into empty containers (`#chartArea`, `#schoolGrid`, `#requestsSection`,
-   the modal's `#itemsSection`/`#movementHistorySection`, etc.) entirely by JS — there's no
-   server-rendered content to keep in sync with markup edits.
+   and IBM Plex Sans for body, loaded from Google Fonts) and a persistent page shell rather than a
+   set of named section containers. A `<header class="topbar">` holds the brand mark, `#tabBar` (a
+   `<nav>` the router populates with tab buttons, hidden via inline `style="display:none"` until
+   login) and `#accountArea` (the login form or logged-in account state, populated by
+   `js/main.js`). Below that, a single `<main id="viewport">` is the one container every route's
+   render function clears (`innerHTML = ''`) and repopulates — Overview, Schools, LocationDetail,
+   and Requests content all live there, one route's markup at a time. An `#overlay`/`#modalContent`
+   pair (now used only by `js/schoolForm.js`'s add/edit-school modal) rounds out the shell. All
+   dynamic content is rendered into these containers entirely by JS — there's no server-rendered
+   content to keep in sync with markup edits.
 
 2. **`js/config.js`**: `SUPABASE_URL`/`SUPABASE_ANON_KEY` constants. The anon key is intentionally
    public client-side — Row Level Security policies are the actual protection layer, not key

@@ -35,7 +35,19 @@ export function openSchoolForm(existing, ctx) {
   `;
 
   overlay.classList.add('open');
-  function close() { overlay.classList.remove('open'); }
+  function close() {
+    overlay.classList.remove('open');
+    overlay.removeEventListener('click', onOverlayClick);
+    document.removeEventListener('keydown', onKeydown);
+  }
+  function onOverlayClick(e) {
+    if (e.target === overlay) close();
+  }
+  function onKeydown(e) {
+    if (e.key === 'Escape') close();
+  }
+  overlay.addEventListener('click', onOverlayClick);
+  document.addEventListener('keydown', onKeydown);
   document.getElementById('modalCloseBtn').addEventListener('click', close);
   document.getElementById('schoolFormCancel').addEventListener('click', close);
   document.getElementById('schoolForm').addEventListener('submit', async (e) => {
