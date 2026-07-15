@@ -1,6 +1,7 @@
 // js/schools.js
 import { renderItemsSection } from './items.js';
 import { renderRequestSection } from './requests.js';
+import { renderHistorySection } from './history.js';
 
 export function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -14,6 +15,7 @@ export function createSchoolsView({ api }) {
   let materials = [];
   let items = [];
   let requests = [];
+  let movements = [];
   let isAdmin = false;
   let currentUserId = null;
   const state = { tier: 'ALL', material: null, query: '' };
@@ -232,6 +234,8 @@ export function createSchoolsView({ api }) {
       </div>
       <div class="manifest-title">Material manifest</div>
       <div id="itemsSection"></div>
+      <div class="manifest-title">Movement history</div>
+      <div id="movementHistorySection"></div>
       ${(!isWarehouse && !isAdmin) ? `
         <div class="manifest-title">Request materials</div>
         <div id="modalRequestsSection"></div>
@@ -253,6 +257,12 @@ export function createSchoolsView({ api }) {
         const refreshed = isWarehouse ? computeWarehouse() : computeSchools().find(sch => sch.id === s.id);
         if (refreshed) openDetailModal(refreshed);
       },
+    });
+    const locationMovements = movements
+      .filter(mv => mv.from_location_id === s.id || mv.to_location_id === s.id)
+      .sort((a, b) => new Date(b.moved_at) - new Date(a.moved_at));
+    renderHistorySection(document.getElementById('movementHistorySection'), {
+      location: s, movements: locationMovements, items, materials, locations,
     });
     if (!isWarehouse && !isAdmin) {
       const myRequests = requests.filter(r => r.location_id === s.id && r.requested_by === currentUserId);
@@ -349,11 +359,12 @@ export function createSchoolsView({ api }) {
   }
 
   async function refresh() {
-    [locations, materials, items, requests] = await Promise.all([
+    [locations, materials, items, requests, movements] = await Promise.all([
       api.listLocations(),
       api.listMaterials(),
       api.listItems(),
       api.listRequests(),
+      api.listMovements(),
     ]);
     document.getElementById('addSchoolBtn').style.display = isAdmin ? '' : 'none';
     renderAll();
@@ -376,6 +387,7 @@ export function createSchoolsView({ api }) {
     materials = [];
     items = [];
     requests = [];
+    movements = [];
     document.getElementById('statSchools').textContent = '0';
     document.getElementById('statUnits').textContent = '0';
     document.getElementById('statMaterials').textContent = '0';
