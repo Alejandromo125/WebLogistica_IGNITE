@@ -24,7 +24,7 @@ async function refreshAuthUI() {
       setAuthStatus(`Logged in as ${profile.role}`, 'live');
       loginForm.style.display = 'none';
       logoutBtn.style.display = '';
-      await schoolsView.loadAndRender(profile.role === 'admin');
+      await schoolsView.loadAndRender(profile.role === 'admin', profile.id);
     } else {
       setAuthStatus('Not logged in.', 'idle');
       loginForm.style.display = '';

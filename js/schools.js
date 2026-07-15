@@ -1,5 +1,6 @@
 // js/schools.js
 import { renderItemsSection } from './items.js';
+import { renderRequestSection } from './requests.js';
 
 export function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -12,7 +13,9 @@ export function createSchoolsView({ api }) {
   let locations = [];
   let materials = [];
   let items = [];
+  let requests = [];
   let isAdmin = false;
+  let currentUserId = null;
   const state = { tier: 'ALL', material: null, query: '' };
 
   function fmt(n) { return (n === null || n === undefined || n === '') ? '—' : n; }
@@ -229,6 +232,10 @@ export function createSchoolsView({ api }) {
       </div>
       <div class="manifest-title">Material manifest</div>
       <div id="itemsSection"></div>
+      ${(!isWarehouse && !isAdmin) ? `
+        <div class="manifest-title">Request materials</div>
+        <div id="modalRequestsSection"></div>
+      ` : ''}
       ${isWarehouse ? '' : `
         <div class="proposal-box">
           <div class="l">Notes</div>
@@ -247,6 +254,17 @@ export function createSchoolsView({ api }) {
         if (refreshed) openDetailModal(refreshed);
       },
     });
+    if (!isWarehouse && !isAdmin) {
+      const myRequests = requests.filter(r => r.location_id === s.id && r.requested_by === currentUserId);
+      renderRequestSection(document.getElementById('modalRequestsSection'), {
+        api, location: s, materials, myRequests,
+        onChange: async () => {
+          await refresh();
+          const refreshed = computeSchools().find(sch => sch.id === s.id);
+          if (refreshed) openDetailModal(refreshed);
+        },
+      });
+    }
     if (!isWarehouse && isAdmin) {
       document.getElementById('editSchoolBtn').addEventListener('click', () => openSchoolForm(s));
     }
@@ -331,17 +349,19 @@ export function createSchoolsView({ api }) {
   }
 
   async function refresh() {
-    [locations, materials, items] = await Promise.all([
+    [locations, materials, items, requests] = await Promise.all([
       api.listLocations(),
       api.listMaterials(),
       api.listItems(),
+      api.listRequests(),
     ]);
     document.getElementById('addSchoolBtn').style.display = isAdmin ? '' : 'none';
     renderAll();
   }
 
-  async function loadAndRender(adminFlag) {
+  async function loadAndRender(adminFlag, userId) {
     isAdmin = adminFlag;
+    currentUserId = userId;
     try {
       await refresh();
     } catch (err) {
@@ -351,9 +371,11 @@ export function createSchoolsView({ api }) {
 
   function clear() {
     isAdmin = false;
+    currentUserId = null;
     locations = [];
     materials = [];
     items = [];
+    requests = [];
     document.getElementById('statSchools').textContent = '0';
     document.getElementById('statUnits').textContent = '0';
     document.getElementById('statMaterials').textContent = '0';
