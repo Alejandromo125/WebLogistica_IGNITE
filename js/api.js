@@ -55,7 +55,7 @@ export function createApi(client) {
   }
 
   async function listRequests() {
-    const { data, error } = await client.from('requests').select('*, profiles(email)');
+    const { data, error } = await client.from('requests').select('*, requester:requested_by(email)');
     if (error) throw new Error(error.message);
     return data;
   }

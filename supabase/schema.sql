@@ -134,7 +134,7 @@ create policy "items: admin can update"
 -- ---------- requests ----------
 create table public.requests (
   id uuid primary key default gen_random_uuid(),
-  requested_by uuid not null references public.profiles(id),
+  requested_by uuid not null default auth.uid() references public.profiles(id),
   location_id uuid not null references public.locations(id),
   material_id uuid not null references public.materials(id),
   quantity integer not null check (quantity > 0),

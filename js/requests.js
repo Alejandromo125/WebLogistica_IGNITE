@@ -65,7 +65,7 @@ function renderApproveForm(container, req, ctx) {
   const material = materials.find(m => m.id === req.material_id);
   const materialName = material ? material.name : 'Unknown material';
   const requestingSchool = locations.find(l => l.id === req.location_id);
-  const availableItems = items.filter(i => i.material_id === req.material_id && !i.retired);
+  const availableItems = items.filter(i => i.material_id === req.material_id && !i.retired && i.current_location_id !== req.location_id);
   const locationsById = new Map(locations.map(l => [l.id, l]));
 
   const byLocation = new Map();
@@ -164,7 +164,7 @@ export function createRequestsView({ api, onStockChange }) {
   function renderPendingRow(req) {
     const row = document.createElement('div');
     row.className = 'card';
-    const requesterEmail = req.profiles ? req.profiles.email : null;
+    const requesterEmail = req.requester ? req.requester.email : null;
     row.innerHTML = `
       <div class="cname">${escapeHtml(materialName(req.material_id))} ×${req.quantity} — ${escapeHtml(locationName(req.location_id))}</div>
       <div class="metaline">Requested by ${escapeHtml(requesterEmail || 'unknown')} · ${new Date(req.created_at).toLocaleDateString()}</div>
@@ -198,7 +198,7 @@ export function createRequestsView({ api, onStockChange }) {
   function renderResolvedRow(req) {
     const row = document.createElement('div');
     row.className = 'card';
-    const requesterEmail = req.profiles ? req.profiles.email : null;
+    const requesterEmail = req.requester ? req.requester.email : null;
     row.innerHTML = `
       <div class="cname">${escapeHtml(materialName(req.material_id))} ×${req.quantity} — ${escapeHtml(locationName(req.location_id))}</div>
       <div class="metaline">${req.status === 'approved' ? 'Approved' : 'Denied'} · requested by ${escapeHtml(requesterEmail || 'unknown')}</div>
