@@ -51,6 +51,15 @@ function makeFakeClient(responses) {
           };
           return chain;
         },
+        delete() {
+          calls.push(['delete', table]);
+          return {
+            eq(col, val) {
+              calls.push(['eq', col, val]);
+              return Promise.resolve(behavior.delete || { error: null });
+            },
+          };
+        },
       };
     },
     rpc(fn, params) {
@@ -242,4 +251,51 @@ test('listMovements throws with the Supabase error message on failure', async ()
   const client = makeFakeClient({ movements: { select: { data: null, error: { message: 'boom' } } } });
   const api = createApi(client);
   await assert.rejects(() => api.listMovements(), (err) => { assert.equal(err.message, 'boom'); return true; });
+});
+
+test('listFavorites returns the caller\'s favorite rows', async () => {
+  const rows = [{ location_id: 'sch-1' }, { location_id: 'sch-2' }];
+  const client = makeFakeClient({ favorites: { select: { data: rows, error: null } } });
+  const api = createApi(client);
+  const result = await api.listFavorites();
+  assert.deepEqual(result, rows);
+  assert.deepEqual(client.calls[0], ['select', 'favorites', 'location_id']);
+});
+
+test('listFavorites throws with the Supabase error message on failure', async () => {
+  const client = makeFakeClient({ favorites: { select: { data: null, error: { message: 'boom' } } } });
+  const api = createApi(client);
+  await assert.rejects(() => api.listFavorites(), (err) => { assert.equal(err.message, 'boom'); return true; });
+});
+
+test('addFavorite inserts by location_id (profile_id defaults server-side) and returns the new row', async () => {
+  const row = { profile_id: 'u1', location_id: 'sch-1', created_at: '2026-07-16T00:00:00Z' };
+  const client = makeFakeClient({ favorites: { insert: { data: row, error: null } } });
+  const api = createApi(client);
+  const result = await api.addFavorite('sch-1');
+  assert.deepEqual(result, row);
+  assert.deepEqual(client.calls[0], ['insert', 'favorites', { location_id: 'sch-1' }]);
+});
+
+test('addFavorite throws with the Supabase error message on failure', async () => {
+  const client = makeFakeClient({ favorites: { insert: { data: null, error: { message: 'duplicate key value' } } } });
+  const api = createApi(client);
+  await assert.rejects(
+    () => api.addFavorite('sch-1'),
+    (err) => { assert.equal(err.message, 'duplicate key value'); return true; }
+  );
+});
+
+test('removeFavorite deletes by location_id', async () => {
+  const client = makeFakeClient({ favorites: { delete: { error: null } } });
+  const api = createApi(client);
+  await api.removeFavorite('sch-1');
+  assert.deepEqual(client.calls[0], ['delete', 'favorites']);
+  assert.deepEqual(client.calls[1], ['eq', 'location_id', 'sch-1']);
+});
+
+test('removeFavorite throws with the Supabase error message on failure', async () => {
+  const client = makeFakeClient({ favorites: { delete: { error: { message: 'boom' } } } });
+  const api = createApi(client);
+  await assert.rejects(() => api.removeFavorite('sch-1'), (err) => { assert.equal(err.message, 'boom'); return true; });
 });
