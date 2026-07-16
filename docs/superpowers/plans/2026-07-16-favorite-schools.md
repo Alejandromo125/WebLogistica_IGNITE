@@ -17,11 +17,15 @@ navigation) and reuses the existing chip-filter pattern for a favourites-only vi
 
 ## Depends on
 
-**This plan assumes [`2026-07-16-person-locations.md`](2026-07-16-person-locations.md) has already
-been merged.** That plan also touches `js/api.js` and `js/store.js` (adding `listProfiles` /
-`profiles` / `computeTeam`), and this plan's full-file replacements for those two files are written
-against the *post-person-locations* content. If person-locations hasn't landed yet, apply that plan
-first — building both in parallel against the same two files will conflict.
+The person-locations plan (custody-tracking `'person'` locations) has already landed and been
+through a follow-up revision — `js/api.js`/`js/store.js` are back to their pre-person-locations
+shape (no `listProfiles`/`profiles`/owner-account binding at all; a `'person'` location is just a
+free-text name). This plan's full-file replacements for `js/api.js` and `js/store.js` are written
+against that *current* content — verify with `git diff` before running Task 2/3 if anything looks
+off, since these files have changed hands a few times.
+
+The previous migration is `supabase/migrations/007_drop_person_location_owner_profile.sql` — this
+plan's migration is therefore **008**, not 007.
 
 ## Global Constraints
 
@@ -46,7 +50,7 @@ first — building both in parallel against the same two files will conflict.
 ## File Structure
 
 **Create:**
-- `supabase/migrations/007_add_favorites.sql` — live-DB migration
+- `supabase/migrations/008_add_favorites.sql` — live-DB migration
 
 **Modify:**
 - `supabase/schema.sql` — add the `favorites` table + RLS policies
@@ -59,9 +63,9 @@ first — building both in parallel against the same two files will conflict.
 - `tests/store.test.js` — cover `favorites`/`isFavorite`
 - `CLAUDE.md` — document the new table and the favourites UI
 
-**Unchanged:** `js/auth.js`, `js/items.js`, `js/transfers.js`, `js/history.js`, `js/history.js`,
-`js/requests.js`, `js/overview.js`, `js/locationDetail.js`, `js/schoolForm.js`, `js/personForm.js`,
-`js/router.js`, `js/main.js`, `js/config.js`, `js/supabaseClient.js`.
+**Unchanged:** `js/auth.js`, `js/items.js`, `js/transfers.js`, `js/history.js`, `js/requests.js`,
+`js/overview.js`, `js/locationDetail.js`, `js/schoolForm.js`, `js/personForm.js`, `js/router.js`,
+`js/main.js`, `js/config.js`, `js/supabaseClient.js`.
 
 ---
 
@@ -69,7 +73,7 @@ first — building both in parallel against the same two files will conflict.
 
 **Files:**
 - Modify: `supabase/schema.sql` (append after the `perform_transfer` grant, at the end of the file)
-- Create: `supabase/migrations/007_add_favorites.sql`
+- Create: `supabase/migrations/008_add_favorites.sql`
 
 **Interfaces:**
 - Produces: `favorites(profile_id uuid, location_id uuid, created_at)`, primary key
@@ -115,7 +119,7 @@ create policy "favorites: user can delete their own"
 - [ ] **Step 2: Write the migration file**
 
 ```sql
--- supabase/migrations/007_add_favorites.sql
+-- supabase/migrations/008_add_favorites.sql
 -- Adds a per-user "favourite schools" list. Personal preference data, not
 -- stock data — freely insertable/deletable by its own owner, no admin gate.
 -- Idempotent: safe to re-run.
@@ -151,7 +155,7 @@ create policy "favorites: user can delete their own"
 - [ ] **Step 3: Commit**
 
 ```bash
-git add supabase/schema.sql supabase/migrations/007_add_favorites.sql
+git add supabase/schema.sql supabase/migrations/008_add_favorites.sql
 git commit -m "feat: add per-user favorite schools table"
 ```
 
@@ -431,22 +435,6 @@ test('listMovements throws with the Supabase error message on failure', async ()
   await assert.rejects(() => api.listMovements(), (err) => { assert.equal(err.message, 'boom'); return true; });
 });
 
-test('listProfiles returns profiles ordered by email', async () => {
-  const rows = [{ id: 'u1', email: 'admin@example.com', role: 'admin' }];
-  const client = makeFakeClient({ profiles: { selectOrder: { data: rows, error: null } } });
-  const api = createApi(client);
-  const result = await api.listProfiles();
-  assert.deepEqual(result, rows);
-  assert.deepEqual(client.calls[0], ['select', 'profiles', 'id, email, role']);
-  assert.deepEqual(client.calls[1], ['order', 'profiles', 'email']);
-});
-
-test('listProfiles throws with the Supabase error message on failure', async () => {
-  const client = makeFakeClient({ profiles: { selectOrder: { data: null, error: { message: 'boom' } } } });
-  const api = createApi(client);
-  await assert.rejects(() => api.listProfiles(), (err) => { assert.equal(err.message, 'boom'); return true; });
-});
-
 test('listFavorites returns the caller\'s favorite rows', async () => {
   const rows = [{ location_id: 'sch-1' }, { location_id: 'sch-2' }];
   const client = makeFakeClient({ favorites: { select: { data: rows, error: null } } });
@@ -589,12 +577,6 @@ export function createApi(client) {
     return data;
   }
 
-  async function listProfiles() {
-    const { data, error } = await client.from('profiles').select('id, email, role').order('email');
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
   async function listFavorites() {
     const { data, error } = await client.from('favorites').select('location_id');
     if (error) throw new Error(error.message);
@@ -618,14 +600,10 @@ export function createApi(client) {
     listItems, createItem, updateItem,
     createRequest, listRequests, updateRequest, performTransfer,
     listMovements,
-    listProfiles,
     listFavorites, addFavorite, removeFavorite,
   };
 }
 ```
-
-> Note: if the person-locations plan hasn't landed, `js/api.js` won't have `listProfiles` yet —
-> drop that one function/export line and everything else in this task still applies cleanly.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -673,7 +651,6 @@ function makeFakeApi(data) {
     listItems: async () => data.items,
     listRequests: async () => data.requests,
     listMovements: async () => data.movements,
-    listProfiles: async () => data.profiles,
     listFavorites: async () => data.favorites,
   };
 }
@@ -684,7 +661,7 @@ const sampleData = {
     { id: 'wh-bcn', name: 'Warehouse Barcelona', type: 'warehouse' },
     { id: 'sch-1', name: 'BSB Cast', type: 'school', tier: 'Tier1', students: 200 },
     { id: 'sch-2', name: 'BSB Sitges', type: 'school', tier: 'Tier2', students: 150 },
-    { id: 'per-1', name: 'Monitor 1 custody', type: 'person', owner_profile_id: 'mon1' },
+    { id: 'per-1', name: 'Marc - Zona Nord', type: 'person' },
   ],
   materials: [{ id: 'm1', name: 'Robot Kit' }],
   items: [
@@ -695,20 +672,15 @@ const sampleData = {
   ],
   requests: [],
   movements: [],
-  profiles: [
-    { id: 'admin1', email: 'admin@example.com', role: 'admin' },
-    { id: 'mon1', email: 'monitor1@example.com', role: 'viewer' },
-  ],
   favorites: [{ profile_id: 'admin1', location_id: 'sch-1' }],
 };
 
-test('refresh populates all seven collections from the injected api', async () => {
+test('refresh populates all six collections from the injected api', async () => {
   const store = createStore(makeFakeApi(sampleData));
   await store.refresh();
   assert.deepEqual(store.getLocations(), sampleData.locations);
   assert.deepEqual(store.getMaterials(), sampleData.materials);
   assert.deepEqual(store.getItems(), sampleData.items);
-  assert.deepEqual(store.getProfiles(), sampleData.profiles);
   assert.deepEqual(store.getFavorites(), sampleData.favorites);
 });
 
@@ -718,7 +690,6 @@ test('clear empties all collections', async () => {
   store.clear();
   assert.deepEqual(store.getLocations(), []);
   assert.deepEqual(store.getItems(), []);
-  assert.deepEqual(store.getProfiles(), []);
   assert.deepEqual(store.getFavorites(), []);
 });
 
@@ -742,12 +713,13 @@ test('computeWarehouses returns both warehouses sorted by name, excluding retire
   assert.equal(madrid.totalUnits, 1); // R-3 excluded because it's retired
 });
 
-test('computeTeam returns only person-type locations with resolved owner email', async () => {
+test('computeTeam returns only person-type locations, sorted by name', async () => {
   const store = createStore(makeFakeApi(sampleData));
   await store.refresh();
   const team = store.computeTeam();
   assert.equal(team.length, 1);
-  assert.equal(team[0].ownerEmail, 'monitor1@example.com');
+  assert.equal(team[0].id, 'per-1');
+  assert.equal(team[0].totalUnits, 1);
 });
 
 test('findLocationView returns null for an unknown id', async () => {
@@ -782,9 +754,6 @@ test('isFavorite returns false before any refresh has happened', () => {
 });
 ```
 
-> Note: if the person-locations plan hasn't landed, drop the `per-1` location, the `computeTeam`
-> test, and `listProfiles`/`getProfiles` references — everything else applies unchanged.
-
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run: `npm test`
@@ -799,17 +768,15 @@ export function createStore(api) {
   let items = [];
   let requests = [];
   let movements = [];
-  let profiles = [];
   let favorites = [];
 
   async function refresh() {
-    [locations, materials, items, requests, movements, profiles, favorites] = await Promise.all([
+    [locations, materials, items, requests, movements, favorites] = await Promise.all([
       api.listLocations(),
       api.listMaterials(),
       api.listItems(),
       api.listRequests(),
       api.listMovements(),
-      api.listProfiles(),
       api.listFavorites(),
     ]);
   }
@@ -820,7 +787,6 @@ export function createStore(api) {
     items = [];
     requests = [];
     movements = [];
-    profiles = [];
     favorites = [];
   }
 
@@ -829,7 +795,6 @@ export function createStore(api) {
   function getItems() { return items; }
   function getRequests() { return requests; }
   function getMovements() { return movements; }
-  function getProfiles() { return profiles; }
   function getFavorites() { return favorites; }
 
   function isFavorite(locationId) {
@@ -854,7 +819,6 @@ export function createStore(api) {
       tier: loc.tier,
       students: loc.students,
       notes: loc.notes,
-      ownerProfileId: loc.owner_profile_id || null,
       materials: locMaterials,
       totalUnits: locItems.length,
     };
@@ -871,14 +835,9 @@ export function createStore(api) {
   }
 
   function computeTeam() {
-    const profilesById = new Map(profiles.map(p => [p.id, p]));
     return locations.filter(l => l.type === 'person')
-      .map(l => {
-        const view = computeLocationView(l);
-        const owner = profilesById.get(l.owner_profile_id);
-        return { ...view, ownerEmail: owner ? owner.email : null };
-      })
-      .sort((a, b) => (a.ownerEmail || a.name).localeCompare(b.ownerEmail || b.name));
+      .map(computeLocationView)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   function findLocationView(id) {
@@ -888,16 +847,12 @@ export function createStore(api) {
 
   return {
     refresh, clear,
-    getLocations, getMaterials, getItems, getRequests, getMovements, getProfiles, getFavorites,
+    getLocations, getMaterials, getItems, getRequests, getMovements, getFavorites,
     computeSchools, computeWarehouses, computeTeam, findLocationView,
     isFavorite,
   };
 }
 ```
-
-> Note: if the person-locations plan hasn't landed, drop `profiles`/`getProfiles`/`computeTeam`/
-> `ownerProfileId`/`api.listProfiles()` from this file — the `favorites` additions apply unchanged
-> on top of the original (pre-person-locations) `js/store.js`.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -1173,7 +1128,7 @@ git commit -m "docs: document the favorites table and favourite-school UI"
 
 - [ ] **Step 1: Apply the migration**
 
-Paste the contents of `supabase/migrations/007_add_favorites.sql` into the Supabase SQL editor for
+Paste the contents of `supabase/migrations/008_add_favorites.sql` into the Supabase SQL editor for
 the live project and run it. Confirm afterward with:
 
 ```sql
