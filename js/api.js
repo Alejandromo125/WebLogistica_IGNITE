@@ -84,11 +84,18 @@ export function createApi(client) {
     return data;
   }
 
+  async function listProfiles() {
+    const { data, error } = await client.from('profiles').select('id, email, role').order('email');
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
   return {
     listLocations, createLocation, updateLocation,
     listMaterials, createMaterial,
     listItems, createItem, updateItem,
     createRequest, listRequests, updateRequest, performTransfer,
     listMovements,
+    listProfiles,
   };
 }
