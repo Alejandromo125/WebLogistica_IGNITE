@@ -54,15 +54,13 @@ create table public.locations (
   tier text,
   students integer,
   notes text,
-  owner_profile_id uuid references public.profiles(id),
   created_at timestamptz not null default now()
 );
 
 -- A 'person' location is a staff member's custody bucket for circulating
--- equipment (robots, consoles, Oculus...). At most one per profile.
-create unique index locations_owner_profile_id_key
-  on public.locations(owner_profile_id)
-  where owner_profile_id is not null;
+-- equipment (robots, consoles, Oculus...), identified by `name` alone — not
+-- tied to any login account, since most staff who carry this equipment
+-- (monitors, teachers) never sign in to this app.
 
 alter table public.locations enable row level security;
 

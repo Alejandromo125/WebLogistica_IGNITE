@@ -26,12 +26,11 @@ export function renderLocationDetail(container, ctx) {
   const tierClass = loc.tier === 'Tier1' ? 't1' : 't2';
   const backHref = (isWarehouse || isPerson) ? '#/overview' : '#/schools';
   const backLabel = (isWarehouse || isPerson) ? '← Back to overview' : '← Back to schools';
-  const owner = isPerson ? store.getProfiles().find(p => p.id === loc.ownerProfileId) : null;
 
   container.innerHTML = `
     <section>
       <a href="${backHref}" class="back-link">${backLabel}</a>
-      <h3 class="detail-title">${escapeHtml(isPerson ? (owner ? owner.email : loc.name) : loc.name)}</h3>
+      <h3 class="detail-title">${escapeHtml(loc.name)}</h3>
       ${isWarehouse
         ? '<div class="modal-tier" style="color:var(--text-muted)">Warehouse</div>'
         : isPerson
@@ -39,12 +38,9 @@ export function renderLocationDetail(container, ctx) {
         : `<div class="modal-tier" style="color:var(--${tierClass === 't1' ? 'primary' : 'text-muted'})">${loc.tier || 'Tier not recorded'}</div>`
       }
       <div class="modal-grid">
-        ${isWarehouse
-          ? `<div class="modal-stat"><div class="l">Units in stock</div><div class="v">${loc.totalUnits}</div></div>
+        ${(isWarehouse || isPerson)
+          ? `<div class="modal-stat"><div class="l">Units in ${isWarehouse ? 'stock' : 'custody'}</div><div class="v">${loc.totalUnits}</div></div>
              <div class="modal-stat"><div class="l">Material lines</div><div class="v">${loc.materials.length}</div></div>`
-          : isPerson
-          ? `<div class="modal-stat"><div class="l">Label</div><div class="v" style="font-size:14px;">${escapeHtml(loc.name)}</div></div>
-             <div class="modal-stat"><div class="l">Units in custody</div><div class="v">${loc.totalUnits}</div></div>`
           : `<div class="modal-stat"><div class="l">Students</div><div class="v">${fmt(loc.students)}</div></div>
              <div class="modal-stat"><div class="l">Units deployed</div><div class="v">${loc.totalUnits}</div></div>`
         }

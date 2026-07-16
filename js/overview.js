@@ -141,7 +141,7 @@ export function renderOverview(container, ctx) {
       card.innerHTML = `
         <div class="punch"></div>
         <div class="tierbadge" style="background:var(--surface-muted); color:var(--text-muted);">TEAM</div>
-        <div class="cname">${escapeHtml(person.ownerEmail || person.name)}</div>
+        <div class="cname">${escapeHtml(person.name)}</div>
         <div class="metaline">${person.totalUnits} units in custody · ${person.materials.length} material line${person.materials.length === 1 ? '' : 's'}</div>
         <div class="chiprow">${chipsHtml || '<span class="matchip">no material recorded</span>'}${moreHtml}</div>
       `;

@@ -64,8 +64,8 @@ DOM-rendering module has no automated tests and is verified manually in a browse
    manually in the browser:
    - `js/router.js` — hash-route parsing (`parseRoute(hash)`) and router state management
      (`createRouter`).
-   - `js/store.js` — shared data store (`createStore(api)`) managing the six collections
-     (locations, materials, items, requests, movements, profiles) plus derived per-location/team
+   - `js/store.js` — shared data store (`createStore(api)`) managing the five collections
+     (locations, materials, items, requests, movements) plus derived per-location/team
      computations (`computeSchools`, `computeWarehouses`, `computeTeam`, `findLocationView`).
    - `js/overview.js` — `renderOverview` for the `#/overview` route: hero stats, material
      distribution chart, tier split, and Warehouse card(s).
@@ -77,7 +77,8 @@ DOM-rendering module has no automated tests and is verified manually in a browse
    - `js/schoolForm.js` — `openSchoolForm`: a shared add/edit-school modal used by overview and
      location-detail routes.
    - `js/personForm.js` — `openPersonForm`: admin-only modal that creates a `'person'`-type
-     location bound to an existing profile, used by the Overview route's Team custody section.
+     location identified by a free-text name (not tied to any login account — most staff who
+     carry this equipment never sign in), used by the Overview route's Team custody section.
    - `js/items.js` — the material manifest inside location detail: admin add/retire items,
      the per-material-line "Transfer" action (admin only).
    - `js/transfers.js` — the transfer form (item checkboxes, destination, note), used by both
@@ -97,11 +98,12 @@ DOM-rendering module has no automated tests and is verified manually in a browse
    Note: there are now two warehouse locations (`Warehouse Madrid`, `Warehouse Barcelona`) —
    `computeWarehouses()` (plural) in `js/store.js`, not a single fixed warehouse. Locations also
    include a third type, `'person'` — a staff member's custody bucket for circulating equipment
-   (robots, consoles, Oculus...), created via `js/personForm.js`'s `openPersonForm` (admin-only,
-   binds to an existing `profiles` row via `owner_profile_id`) and listed by `computeTeam()` in
-   the Overview route's Team custody section. `js/locationDetail.js` renders a person-type
-   location like any other, minus the school-only fields (tier, students, notes) and the
-   request-materials form.
+   (robots, consoles, Oculus...), identified purely by a free-text `name` (e.g. "Marc — Zona
+   Nord") rather than any login account, since monitors/teachers who carry this equipment don't
+   use the app themselves. Created via `js/personForm.js`'s `openPersonForm` (admin-only) and
+   listed by `computeTeam()` in the Overview route's Team custody section. `js/locationDetail.js`
+   renders a person-type location like a warehouse (Units in custody / Material lines stats),
+   minus the school-only fields (tier, students, notes) and the request-materials form.
 
 7. **`supabase/schema.sql`** is the fresh-install source of truth for the database (tables, RLS
    policies, the `perform_transfer` RPC); **`supabase/migrations/`** holds incremental changes

@@ -4,16 +4,14 @@ export function createStore(api) {
   let items = [];
   let requests = [];
   let movements = [];
-  let profiles = [];
 
   async function refresh() {
-    [locations, materials, items, requests, movements, profiles] = await Promise.all([
+    [locations, materials, items, requests, movements] = await Promise.all([
       api.listLocations(),
       api.listMaterials(),
       api.listItems(),
       api.listRequests(),
       api.listMovements(),
-      api.listProfiles(),
     ]);
   }
 
@@ -23,7 +21,6 @@ export function createStore(api) {
     items = [];
     requests = [];
     movements = [];
-    profiles = [];
   }
 
   function getLocations() { return locations; }
@@ -31,7 +28,6 @@ export function createStore(api) {
   function getItems() { return items; }
   function getRequests() { return requests; }
   function getMovements() { return movements; }
-  function getProfiles() { return profiles; }
 
   function computeLocationView(loc) {
     const materialsById = new Map(materials.map(m => [m.id, m]));
@@ -51,7 +47,6 @@ export function createStore(api) {
       tier: loc.tier,
       students: loc.students,
       notes: loc.notes,
-      ownerProfileId: loc.owner_profile_id || null,
       materials: locMaterials,
       totalUnits: locItems.length,
     };
@@ -68,14 +63,9 @@ export function createStore(api) {
   }
 
   function computeTeam() {
-    const profilesById = new Map(profiles.map(p => [p.id, p]));
     return locations.filter(l => l.type === 'person')
-      .map(l => {
-        const view = computeLocationView(l);
-        const owner = profilesById.get(l.owner_profile_id);
-        return { ...view, ownerEmail: owner ? owner.email : null };
-      })
-      .sort((a, b) => (a.ownerEmail || a.name).localeCompare(b.ownerEmail || b.name));
+      .map(computeLocationView)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   function findLocationView(id) {
@@ -85,7 +75,7 @@ export function createStore(api) {
 
   return {
     refresh, clear,
-    getLocations, getMaterials, getItems, getRequests, getMovements, getProfiles,
+    getLocations, getMaterials, getItems, getRequests, getMovements,
     computeSchools, computeWarehouses, computeTeam, findLocationView,
   };
 }
