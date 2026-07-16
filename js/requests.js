@@ -168,8 +168,8 @@ export function renderRequests(container, ctx) {
       <div class="cname">${escapeHtml(materialName(req.material_id))} ×${req.quantity} — ${escapeHtml(locationName(req.location_id))}</div>
       <div class="metaline">Requested by ${escapeHtml(requesterEmail || 'unknown')} · ${new Date(req.created_at).toLocaleDateString()}</div>
       ${req.note ? `<div class="metaline">Note: ${escapeHtml(req.note)}</div>` : ''}
-      <div class="approve-area" style="margin-top:10px;"></div>
-      <button type="button" class="chip deny-btn" style="margin-top:10px;">Deny</button>
+      <div class="approve-area" style="margin-top:16px;"></div>
+      <button type="button" class="chip deny-btn" style="margin-top:16px;">Deny</button>
     `;
     renderApproveForm(row.querySelector('.approve-area'), req, {
       api, locations, materials, items,
