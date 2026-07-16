@@ -1,10 +1,12 @@
 // js/overview.js
 import { escapeHtml } from './schools.js';
+import { openPersonForm } from './personForm.js';
 
 export function renderOverview(container, ctx) {
-  const { store, navigate } = ctx;
+  const { store, navigate, isAdmin } = ctx;
   const schools = store.computeSchools();
   const warehouses = store.computeWarehouses();
+  const team = store.computeTeam();
 
   const totalUnits = schools.reduce((a, s) => a + s.totalUnits, 0);
   const matSet = new Set();
@@ -54,6 +56,17 @@ export function renderOverview(container, ctx) {
         <div class="tag">central unassigned stock</div>
       </div>
       <div class="grid" id="warehouseGrid"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Team custody</h2>
+        <div style="display:flex; align-items:center; gap:12px;">
+          ${isAdmin ? '<button id="addPersonBtn" class="chip">+ Add team member</button>' : ''}
+          <div class="tag">circulating equipment held by staff</div>
+        </div>
+      </div>
+      <div class="grid" id="teamGrid"></div>
     </section>
   `;
 
@@ -113,5 +126,32 @@ export function renderOverview(container, ctx) {
       card.addEventListener('click', () => navigate(`#/locations/${wh.id}`));
       warehouseGrid.appendChild(card);
     });
+  }
+
+  const teamGrid = container.querySelector('#teamGrid');
+  if (team.length === 0) {
+    teamGrid.innerHTML = '<div class="empty-note">No team members added yet.</div>';
+  } else {
+    teamGrid.innerHTML = '';
+    team.forEach(person => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const chipsHtml = person.materials.slice(0, 6).map(m => `<span class="matchip">${escapeHtml(m.name)} ×${m.count}</span>`).join('');
+      const moreHtml = person.materials.length > 6 ? `<span class="matchip more">+${person.materials.length - 6} more</span>` : '';
+      card.innerHTML = `
+        <div class="punch"></div>
+        <div class="tierbadge" style="background:var(--surface-muted); color:var(--text-muted);">TEAM</div>
+        <div class="cname">${escapeHtml(person.ownerEmail || person.name)}</div>
+        <div class="metaline">${person.totalUnits} units in custody · ${person.materials.length} material line${person.materials.length === 1 ? '' : 's'}</div>
+        <div class="chiprow">${chipsHtml || '<span class="matchip">no material recorded</span>'}${moreHtml}</div>
+      `;
+      card.addEventListener('click', () => navigate(`#/locations/${person.id}`));
+      teamGrid.appendChild(card);
+    });
+  }
+
+  if (isAdmin) {
+    const addPersonBtn = container.querySelector('#addPersonBtn');
+    if (addPersonBtn) addPersonBtn.addEventListener('click', () => openPersonForm(ctx));
   }
 }

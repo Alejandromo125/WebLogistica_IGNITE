@@ -243,3 +243,19 @@ test('listMovements throws with the Supabase error message on failure', async ()
   const api = createApi(client);
   await assert.rejects(() => api.listMovements(), (err) => { assert.equal(err.message, 'boom'); return true; });
 });
+
+test('listProfiles returns profiles ordered by email', async () => {
+  const rows = [{ id: 'u1', email: 'admin@example.com', role: 'admin' }];
+  const client = makeFakeClient({ profiles: { selectOrder: { data: rows, error: null } } });
+  const api = createApi(client);
+  const result = await api.listProfiles();
+  assert.deepEqual(result, rows);
+  assert.deepEqual(client.calls[0], ['select', 'profiles', 'id, email, role']);
+  assert.deepEqual(client.calls[1], ['order', 'profiles', 'email']);
+});
+
+test('listProfiles throws with the Supabase error message on failure', async () => {
+  const client = makeFakeClient({ profiles: { selectOrder: { data: null, error: { message: 'boom' } } } });
+  const api = createApi(client);
+  await assert.rejects(() => api.listProfiles(), (err) => { assert.equal(err.message, 'boom'); return true; });
+});
