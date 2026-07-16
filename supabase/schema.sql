@@ -257,3 +257,31 @@ end;
 $$;
 
 grant execute on function public.perform_transfer(text[], uuid, uuid, text, uuid) to authenticated;
+
+-- ---------- favorites ----------
+-- Personal preference data, not stock data — each user manages only their
+-- own rows, no admin gate, and (unlike every other table here) rows are
+-- meant to be freely deletable (un-favouriting).
+create table public.favorites (
+  profile_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  location_id uuid not null references public.locations(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (profile_id, location_id)
+);
+
+alter table public.favorites enable row level security;
+
+create policy "favorites: user can read their own"
+  on public.favorites for select
+  to authenticated
+  using (profile_id = auth.uid());
+
+create policy "favorites: user can insert their own"
+  on public.favorites for insert
+  to authenticated
+  with check (profile_id = auth.uid());
+
+create policy "favorites: user can delete their own"
+  on public.favorites for delete
+  to authenticated
+  using (profile_id = auth.uid());
