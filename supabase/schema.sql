@@ -50,12 +50,19 @@ create trigger on_auth_user_created
 create table public.locations (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  type text not null check (type in ('warehouse','school')),
+  type text not null check (type in ('warehouse','school','person')),
   tier text,
   students integer,
   notes text,
+  owner_profile_id uuid references public.profiles(id),
   created_at timestamptz not null default now()
 );
+
+-- A 'person' location is a staff member's custody bucket for circulating
+-- equipment (robots, consoles, Oculus...). At most one per profile.
+create unique index locations_owner_profile_id_key
+  on public.locations(owner_profile_id)
+  where owner_profile_id is not null;
 
 alter table public.locations enable row level security;
 
