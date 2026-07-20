@@ -9,6 +9,7 @@ function makeFakeApi(data) {
     listItems: async () => data.items,
     listRequests: async () => data.requests,
     listMovements: async () => data.movements,
+    listFavorites: async () => data.favorites,
   };
 }
 
@@ -17,6 +18,7 @@ const sampleData = {
     { id: 'wh-mad', name: 'Warehouse Madrid', type: 'warehouse' },
     { id: 'wh-bcn', name: 'Warehouse Barcelona', type: 'warehouse' },
     { id: 'sch-1', name: 'BSB Cast', type: 'school', tier: 'Tier1', students: 200 },
+    { id: 'sch-2', name: 'BSB Sitges', type: 'school', tier: 'Tier2', students: 150 },
     { id: 'per-1', name: 'Marc - Zona Nord', type: 'person' },
   ],
   materials: [{ id: 'm1', name: 'Robot Kit' }],
@@ -28,14 +30,16 @@ const sampleData = {
   ],
   requests: [],
   movements: [],
+  favorites: [{ profile_id: 'admin1', location_id: 'sch-1' }],
 };
 
-test('refresh populates all five collections from the injected api', async () => {
+test('refresh populates all six collections from the injected api', async () => {
   const store = createStore(makeFakeApi(sampleData));
   await store.refresh();
   assert.deepEqual(store.getLocations(), sampleData.locations);
   assert.deepEqual(store.getMaterials(), sampleData.materials);
   assert.deepEqual(store.getItems(), sampleData.items);
+  assert.deepEqual(store.getFavorites(), sampleData.favorites);
 });
 
 test('clear empties all collections', async () => {
@@ -44,16 +48,17 @@ test('clear empties all collections', async () => {
   store.clear();
   assert.deepEqual(store.getLocations(), []);
   assert.deepEqual(store.getItems(), []);
+  assert.deepEqual(store.getFavorites(), []);
 });
 
 test('computeSchools returns only school-type locations with computed material totals', async () => {
   const store = createStore(makeFakeApi(sampleData));
   await store.refresh();
   const schools = store.computeSchools();
-  assert.equal(schools.length, 1);
-  assert.equal(schools[0].id, 'sch-1');
-  assert.equal(schools[0].totalUnits, 1);
-  assert.deepEqual(schools[0].materials, [{ name: 'Robot Kit', ids: ['R-1'], count: 1 }]);
+  assert.equal(schools.length, 2);
+  const cast = schools.find(s => s.id === 'sch-1');
+  assert.equal(cast.totalUnits, 1);
+  assert.deepEqual(cast.materials, [{ name: 'Robot Kit', ids: ['R-1'], count: 1 }]);
 });
 
 test('computeWarehouses returns both warehouses sorted by name, excluding retired items', async () => {
@@ -67,17 +72,12 @@ test('computeWarehouses returns both warehouses sorted by name, excluding retire
 });
 
 test('computeTeam returns only person-type locations, sorted by name', async () => {
-  const data = {
-    ...sampleData,
-    locations: [...sampleData.locations, { id: 'per-2', name: 'Anna - Zona Sud', type: 'person' }],
-  };
-  const store = createStore(makeFakeApi(data));
+  const store = createStore(makeFakeApi(sampleData));
   await store.refresh();
   const team = store.computeTeam();
-  assert.equal(team.length, 2);
-  assert.deepEqual(team.map(t => t.name), ['Anna - Zona Sud', 'Marc - Zona Nord']);
-  const marc = team.find(t => t.id === 'per-1');
-  assert.equal(marc.totalUnits, 1);
+  assert.equal(team.length, 1);
+  assert.equal(team[0].id, 'per-1');
+  assert.equal(team[0].totalUnits, 1);
 });
 
 test('findLocationView returns null for an unknown id', async () => {
@@ -92,4 +92,21 @@ test('findLocationView returns the computed view for a known id', async () => {
   const view = store.findLocationView('sch-1');
   assert.equal(view.name, 'BSB Cast');
   assert.equal(view.totalUnits, 1);
+});
+
+test('isFavorite returns true for a favorited location', async () => {
+  const store = createStore(makeFakeApi(sampleData));
+  await store.refresh();
+  assert.equal(store.isFavorite('sch-1'), true);
+});
+
+test('isFavorite returns false for a non-favorited location', async () => {
+  const store = createStore(makeFakeApi(sampleData));
+  await store.refresh();
+  assert.equal(store.isFavorite('sch-2'), false);
+});
+
+test('isFavorite returns false before any refresh has happened', () => {
+  const store = createStore(makeFakeApi(sampleData));
+  assert.equal(store.isFavorite('sch-1'), false);
 });

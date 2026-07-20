@@ -4,14 +4,16 @@ export function createStore(api) {
   let items = [];
   let requests = [];
   let movements = [];
+  let favorites = [];
 
   async function refresh() {
-    [locations, materials, items, requests, movements] = await Promise.all([
+    [locations, materials, items, requests, movements, favorites] = await Promise.all([
       api.listLocations(),
       api.listMaterials(),
       api.listItems(),
       api.listRequests(),
       api.listMovements(),
+      api.listFavorites(),
     ]);
   }
 
@@ -21,6 +23,7 @@ export function createStore(api) {
     items = [];
     requests = [];
     movements = [];
+    favorites = [];
   }
 
   function getLocations() { return locations; }
@@ -28,6 +31,11 @@ export function createStore(api) {
   function getItems() { return items; }
   function getRequests() { return requests; }
   function getMovements() { return movements; }
+  function getFavorites() { return favorites; }
+
+  function isFavorite(locationId) {
+    return favorites.some(f => f.location_id === locationId);
+  }
 
   function computeLocationView(loc) {
     const materialsById = new Map(materials.map(m => [m.id, m]));
@@ -75,7 +83,8 @@ export function createStore(api) {
 
   return {
     refresh, clear,
-    getLocations, getMaterials, getItems, getRequests, getMovements,
+    getLocations, getMaterials, getItems, getRequests, getMovements, getFavorites,
     computeSchools, computeWarehouses, computeTeam, findLocationView,
+    isFavorite,
   };
 }

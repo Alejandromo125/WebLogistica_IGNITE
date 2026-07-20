@@ -84,11 +84,29 @@ export function createApi(client) {
     return data;
   }
 
+  async function listFavorites() {
+    const { data, error } = await client.from('favorites').select('location_id');
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async function addFavorite(locationId) {
+    const { data, error } = await client.from('favorites').insert({ location_id: locationId }).select().single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async function removeFavorite(locationId) {
+    const { error } = await client.from('favorites').delete().eq('location_id', locationId);
+    if (error) throw new Error(error.message);
+  }
+
   return {
     listLocations, createLocation, updateLocation,
     listMaterials, createMaterial,
     listItems, createItem, updateItem,
     createRequest, listRequests, updateRequest, performTransfer,
     listMovements,
+    listFavorites, addFavorite, removeFavorite,
   };
 }
