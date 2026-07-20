@@ -109,7 +109,7 @@ export function renderSchools(container, ctx) {
         <div class="punch"></div>
         <button type="button" class="fav-toggle${isFav ? ' active' : ''}" aria-label="${isFav ? 'Remove from favourites' : 'Add to favourites'}" aria-pressed="${isFav}">★</button>
         <div class="tierbadge ${tierClass}">${s.tier || 'N/A'}</div>
-        <div class="cname">${escapeHtml(s.name)}</div>
+        <div class="cname has-fav">${escapeHtml(s.name)}</div>
         <div class="metaline">${s.totalUnits} units · ${s.materials.length} material line${s.materials.length === 1 ? '' : 's'}</div>
         <div class="chiprow">${chipsHtml || '<span class="matchip">no material recorded</span>'}${moreHtml}</div>
       `;
