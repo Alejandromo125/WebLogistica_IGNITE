@@ -10,7 +10,7 @@ export function renderOverview(container, ctx) {
 
   const totalUnits = schools.reduce((a, s) => a + s.totalUnits, 0);
   const matSet = new Set();
-  schools.forEach(s => s.materials.forEach(m => matSet.add(m.name)));
+  [...schools, ...warehouses, ...team].forEach(loc => loc.materials.forEach(m => matSet.add(m.name)));
 
   const totals = {};
   [...schools, ...warehouses, ...team].forEach(loc => loc.materials.forEach(m => {
