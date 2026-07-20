@@ -69,9 +69,11 @@ DOM-rendering module has no automated tests and is verified manually in a browse
      computations (`computeSchools`, `computeWarehouses`, `computeTeam`, `findLocationView`).
    - `js/overview.js` — `renderOverview` for the `#/overview` route: hero stats, material
      distribution chart, tier split, and Warehouse card(s).
-   - `js/schools.js` — `renderSchools` for the `#/schools` route: school grid and search/filter
-     state. Exports `escapeHtml()`, used by every rendering module to safely interpolate
-     user-entered text into `innerHTML`.
+   - `js/schools.js` — `renderSchools` for the `#/schools` route: school grid, search/tier filter
+     state, and a per-user favourite-school star toggle (backed by the `favorites` table via
+     `store.isFavorite()`/`api.addFavorite()`/`api.removeFavorite()`) with a "★ Favourites" filter
+     chip alongside Tier 1/Tier 2. Exports `escapeHtml()`, used by every rendering module to safely
+     interpolate user-entered text into `innerHTML`.
    - `js/locationDetail.js` — `renderLocationDetail` for the `#/locations/:id` route: replaces
      the old detail modal, rendering a single location's full inventory, actions, and history.
    - `js/schoolForm.js` — `openSchoolForm`: a shared add/edit-school modal used by overview and
@@ -124,7 +126,9 @@ DOM-rendering module has no automated tests and is verified manually in a browse
   being interpolated into `innerHTML` — never interpolate unescaped user input.
 - Nothing in this app hard-deletes a row. `items`/`locations`/`materials` have no `DELETE` policy;
   denying a request sets `status = 'denied'`, it doesn't delete the row. If a feature seems to need
-  deletion, that's a design question to raise, not something to add to the schema unilaterally.
+  deletion, that's a design question to raise, not something to add to the schema unilaterally. The
+  one exception is `favorites` — personal per-user preference data, not stock data, so its own
+  owner can freely insert/delete rows (RLS-scoped to `profile_id = auth.uid()`, no admin gate).
 - The live data contract (table shapes, RLS policies, the `perform_transfer` RPC's exact parameter
   names) is defined by `supabase/schema.sql` plus whatever's actually been applied via
   `supabase/migrations/` to the live project — if a change touches the database, confirm what's
