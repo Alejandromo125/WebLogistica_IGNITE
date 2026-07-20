@@ -13,7 +13,7 @@ export function renderOverview(container, ctx) {
   schools.forEach(s => s.materials.forEach(m => matSet.add(m.name)));
 
   const totals = {};
-  schools.forEach(s => s.materials.forEach(m => {
+  [...schools, ...warehouses, ...team].forEach(loc => loc.materials.forEach(m => {
     totals[m.name] = (totals[m.name] || 0) + m.count;
   }));
   const totalsSorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
@@ -72,7 +72,7 @@ export function renderOverview(container, ctx) {
 
   const chartArea = container.querySelector('#chartArea');
   if (totalsSorted.length === 0) {
-    chartArea.innerHTML = '<div class="empty-note">No material recorded across schools yet.</div>';
+    chartArea.innerHTML = '<div class="empty-note">No material recorded yet.</div>';
   } else {
     totalsSorted.forEach(([name, count]) => {
       const row = document.createElement('div');
